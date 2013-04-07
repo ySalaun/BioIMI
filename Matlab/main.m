@@ -1,5 +1,5 @@
-n = 50;
 % size of the 3D picture
+n = 50;
 s = [n n n];
 % center of the ellipsoid
 c = [n/2 n/2 n/2];
