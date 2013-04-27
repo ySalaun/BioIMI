@@ -1,4 +1,4 @@
-function [ Vectors,Values ] = pca(A,nb_vec)
+function [ Vectors,Values,Mean ] = pca(A,nb_vec)
 
 % pca compute the principal component analysis.
 

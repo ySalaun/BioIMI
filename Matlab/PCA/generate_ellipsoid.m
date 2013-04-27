@@ -31,14 +31,14 @@ e = zeros(s(1), s(2), s(3));
 % generate probabilities whether the voxel is inside or outside the
 % ellipsoid
 for i=1:s(1)
-    for j=1:s(1)
-        for k=1:s(1)
+    for j=1:s(2)
+        for k=1:s(3)
             % voxel coordinates
             voxel = [i j k];
             % compute if the voxel is inside the ellipsoid
             d = 0;
             for l=1:3
-                d = d + sum((((voxel-c).*X(l,:))/R(l)).^2);
+                d = d + (sum( (voxel-c).*X(l,:) ) /R(l))^2;
             end
             % if inside the ellipsoid
             if(d <= 1) 
