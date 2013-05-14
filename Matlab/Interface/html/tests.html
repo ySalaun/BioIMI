@@ -1,0 +1,156 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      --><title>tests</title><meta name="generator" content="MATLAB 7.9"><meta name="date" content="2013-05-12"><meta name="m-file" content="tests"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><pre class="codeinput">addpath(genpath(<span class="string">'/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'</span>));
+
+X=read_dicom(20:30);
+
+vpar=[5 1 1 1;20 1 2 1];
+Y=convolution_gabor(X,vpar);
+
+siz=size(Y);
+
+A=reshape(Y,siz(1)*siz(2)*siz(3),siz(4));
+
+Z=classification_acp(Y);
+
+display_scans(Z);
+</pre><pre class="codeoutput">
+namefile =
+
+IM0020.dcm
+
+
+namefile =
+
+IM0021.dcm
+
+
+namefile =
+
+IM0022.dcm
+
+
+namefile =
+
+IM0023.dcm
+
+
+namefile =
+
+IM0024.dcm
+
+
+namefile =
+
+IM0025.dcm
+
+
+namefile =
+
+IM0026.dcm
+
+
+namefile =
+
+IM0027.dcm
+
+
+namefile =
+
+IM0028.dcm
+
+
+namefile =
+
+IM0029.dcm
+
+
+namefile =
+
+IM0030.dcm
+
+Iteration 1
+Iteration 2
+min -36819 max 50389
+</pre><img vspace="5" hspace="5" src="tests_01.png" alt=""> <p class="footer"><br>
+      Published with MATLAB&reg; 7.9<br></p></div><!--
+##### SOURCE BEGIN #####
+
+addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
+
+X=read_dicom(20:30);
+
+vpar=[5 1 1 1;20 1 2 1];
+Y=convolution_gabor(X,vpar);
+
+siz=size(Y);
+
+A=reshape(Y,siz(1)*siz(2)*siz(3),siz(4));
+
+Z=classification_acp(Y);
+
+display_scans(Z);
+##### SOURCE END #####
+--></body></html>

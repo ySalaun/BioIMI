@@ -7,7 +7,7 @@ function Y=convolution_gabor(I,vparametres)
 
 % sorties : J 'image' l-2rxh-2rxp-2rxn
 
-rayon=2;
+rayon=3;
 
     function f=gabor(a,b,c,sigma,x,y,z)
         % evalue le filtre de Gabor centré de paramètres a,b,c,sigma au point (x,y,z)
