@@ -6,10 +6,10 @@ function [ c, X, R ] = parametres( E )
 
 %Compute the voxel in the nodule
 M=Is_in ( E );
-m=size(M);
+m=size(M,1)
 
 % Compute the parameters c and X
-[Vect, Val, Mean]= pca ( M, 3 )
+[Vect, Val, Mean]= pca ( M, 3 );
 
 Val= sqrt(Val)
 
@@ -17,21 +17,13 @@ c=Mean;
 
 X=Vect';
 
-% Compute R using Val
-max3 = 0;
-for i=1:m
-    % voxel coordinates
-    voxel = M(i,:);
-    % compute if the voxel is inside the ellipsoïde
-    d3 = sum( ((voxel-c).*X(3,:)) );
-    if (d3>max3)
-        max3 = d3;
-    end
-end
+% Compute the rays using : Volume=4/3*Pi*a*b*c= m 
 
-R(1) = max3*Val(1)/Val(3);
-R(2) = max3*Val(2)/Val(3);
-R(3) = max3;
+R=zeros(3,1);
+
+R(1)=nthroot(3.*m/(4*pi)*Val(1)/Val(3)*Val(1)/Val(2),3);
+R(2)=R(1)*Val(2)/Val(1);
+R(3)=R(1)*Val(3)/Val(1);
 
 end
 
