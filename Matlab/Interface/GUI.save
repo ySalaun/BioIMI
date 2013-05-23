@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 23-May-2013 15:51:16
+% Last Modified by GUIDE v2.5 23-May-2013 01:33:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,7 +78,7 @@ varargout{1} = handles.output;
 
 
 % --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles) % Parcourir
+function pushbutton1_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -87,35 +87,17 @@ function pushbutton1_Callback(hObject, eventdata, handles) % Parcourir
 
 if ~(isequal(FileName,0) || isequal(PathName,0))
     
-    handles.Y=read_dicom_name(FileName,PathName);
-    handles.nimages=length(FileName);
-    handles.currentimage=1;
-	Y1=squeeze(handles.Y(:,:,1,handles.currentimage));
+    Y=read_dicom_name(FileName,PathName);
+	display_scans(Y,0);
+	Y1=squeeze(Y(:,:,1,1));
 	axes(handles.axes1);
 	imshow(Y1);
-	guidata(hObject,handles);
+	imcrop;
     %setappdata(handles.figure1,'Signal',x); 
     %setappdata(handles.figure1,'FreqEch',Fe); 
 
 end
 	
-
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles) % Movie
-	display_scans(handles.Y,0);
-	
-
-% --- Executes on button press in pushbutton3.
-function pushbutton3_Callback(hObject, eventdata, handles) % Selection
-	axes(handles.axes1);
-	[~,rect]=imcrop;
-	handles.rect=rect;
-	guidata(hObject,handles);
-
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles) % Next
-    handles.currentimage=mod((handles.currentimage+1),handles.nimages);
-	Y1=squeeze(handles.Y(:,:,1,handles.currentimage));
-	axes(handles.axes1);
-	imshow(Y1);
-
+% hObject    handle to pushbutton1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
