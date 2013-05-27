@@ -16,7 +16,7 @@ SliceThickness=dcm_info.SliceThickness;
 % ContourData tableau de cell de [3*k x 1] vecteur colonne (x1,y1,z1,x2,y2,...) en mm
 %       chaque vecteur contient un contour que l'on suppose horizontal
 % z0 coupe à selectionner 
-% ImagePosition coordonnée du pixel(0,0,0)
+% ImagePosition coordonnée du pixel(0,0,0), on suppose l'orientation BIPED
 % PixelSpacing distance entre 2 centres de pixels adjacents (mm)
 % SliceThickness épaisseur des coupes (mm)
 
@@ -26,6 +26,7 @@ Lc=length(fields);
 for ic=1:Lc
     CD=ContourData.(fields{ic}).ContourData;
     z1=-1*(CD(3)-ImagePosition(3))/SliceThickness;% hauteur du contour en pixels
+    %disp(z1);   
     if (abs(z1-z0)<1)
         disp(z1);
         % Création des vecteurs de coordonnées : x, y
@@ -33,7 +34,7 @@ for ic=1:Lc
         y=(CD(2:3:end)-ImagePosition(2))/PixelSpacing;
         %z=(ContourData(3:3:end)-ImagePosition(3))/SliceThickness;
         %f=find(abs(z-z0)<1)
-        plot(x,y);
+        plot(512-x,512-y);
     end
 end
 

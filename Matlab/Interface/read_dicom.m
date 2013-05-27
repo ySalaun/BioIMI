@@ -1,4 +1,4 @@
-function [Y,Z,info]=read_dicom(vk,path)
+function [Y,info]=read_dicom(vk,path)
 
 % Y=read_dicom(1:18) lit les images IM0001.dcm à IM0018.dcm dans dossier
 % désigner par path, Z et Y contiennent les mêmes données seule la forme

@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 23-May-2013 15:51:16
+% Last Modified by GUIDE v2.5 26-May-2013 20:42:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,39 +83,94 @@ function pushbutton1_Callback(hObject, eventdata, handles) % Parcourir
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-	[FileName,PathName] = uigetfile('*.dcm','MultiSelect','on','Selectionnez les images');
+[FileName,PathName] = uigetfile('*.dcm','MultiSelect','on','Selectionnez les images');
+handles.FileName=FileName;
 
+if isequal(class(FileName),'char') % un seul fichier
+    FileName={FileName};
+end
+handles.FileName=FileName;
 if ~(isequal(FileName,0) || isequal(PathName,0))
     
-    handles.Y=read_dicom_name(FileName,PathName);
+    [handles.Y,handles.info]=read_dicom_name(FileName,PathName);
     handles.nimages=length(FileName);
     handles.currentimage=1;
-	Y1=squeeze(handles.Y(:,:,1,handles.currentimage));
-	axes(handles.axes1);
-	imshow(Y1);
+	Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
+    
+    handles.rt=0;
+    
+	%imshow(Y1);
+    set(handles.text1,'String',handles.FileName{1,1});
+    imagesc(Y1)
+    colormap('gray')
+    axis image
 	guidata(hObject,handles);
     %setappdata(handles.figure1,'Signal',x); 
     %setappdata(handles.figure1,'FreqEch',Fe); 
 
 end
+
 	
 
 % --- Executes on button press in pushbutton2.
 function pushbutton2_Callback(hObject, eventdata, handles) % Movie
 	display_scans(handles.Y,0);
-	
 
 % --- Executes on button press in pushbutton3.
 function pushbutton3_Callback(hObject, eventdata, handles) % Selection
-	axes(handles.axes1);
 	[~,rect]=imcrop;
 	handles.rect=rect;
 	guidata(hObject,handles);
 
+
 % --- Executes on button press in pushbutton4.
 function pushbutton4_Callback(hObject, eventdata, handles) % Next
-    handles.currentimage=mod((handles.currentimage+1),handles.nimages);
-	Y1=squeeze(handles.Y(:,:,1,handles.currentimage));
-	axes(handles.axes1);
-	imshow(Y1);
+    handles.currentimage=mod(handles.currentimage,handles.nimages)+1;
+	Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
+	%imshow(Y1);
+    set(handles.text1,'String',handles.FileName{1,handles.currentimage});
+    imagesc(Y1)
+    colormap('gray')
+    axis image
+    
+   if (handles.rt)
+        hold on;
+        imagesc(Y1)
+        colormap('gray')
+        axis image
+        
+        n_image=handles.FileName{1,handles.currentimage};
+        n_image=str2num(n_image(end-7:end-4));% à améliorer, récuprère le numéro de l'image
+        n_imageref=handles.FileName{1,1};
+        n_imageref=str2num(n_imageref(end-7:end-4));% id
 
+        [~]=add_RT(handles.info(1),handles.rt_info,n_image-n_imageref);
+       
+        hold off;
+    end
+        
+    guidata(hObject,handles);
+
+
+% --- Executes on button press in pushbutton5.
+function pushbutton5_Callback(hObject, eventdata, handles) %Expert
+  [FileName,PathName] = uigetfile('*.dcm','MultiSelect','off','Selectionnez l''image');
+  handles.rt_info=dicominfo(strcat(PathName,FileName));
+  handles.rt=1;
+  Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
+  
+  hold on;
+    imagesc(Y1)
+    colormap('gray')
+    axis image
+    n_image=handles.FileName{1,handles.currentimage};
+    n_image=str2num(n_image(end-7:end-4));% à améliorer, récuprère le numéro de l'image
+    n_imageref=handles.FileName{1,1};
+    n_imageref=str2num(n_imageref(end-7:end-4));% id
+    
+    
+    [~]=add_RT(handles.info(1),handles.rt_info,n_image-n_imageref);
+ hold off;
+ guidata(hObject,handles);
+
+  

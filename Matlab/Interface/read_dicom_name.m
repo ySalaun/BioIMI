@@ -25,7 +25,7 @@ for i=1:nfiles
     namefile=strcat(PathName,FileName{1,i});
     disp(FileName{1,i});
     in = dicominfo(namefile);
-    %info=[info,in];
+    info=[info,in];
     Y(:,:,1,i) = dicomread(in);
 end
 
