@@ -20,18 +20,23 @@ if generated_input
 	m = [0.7 0.3];
 	sigma = [0.3 0.3];
 
-	% generate ellipsoid
+	% generate proba_ellipsoid
 	ellipsoid = generate_ellipsoid(s, c, X, R, m, sigma);
     
     m_color = [45 123];
-    sigma = [45 60];
+    sigma_color = [45 60];
     
-    % generate ellipsoid
-	I = generate_ellipsoid(s, c, X, R, m, sigma);
+    % generate color_ellipsoid
+	I = generate_ellipsoid(s, c, X, R, m_color, sigma_color);
+    
+    % generate true_ellipsoid
+    m = [1 0];
+	sigma = [0 0];
+    true_ellipsoid = generate_ellipsoid(s, c, X, R, m, sigma);
 end
 
 % display ellipsoid
-M = Is_in (ellipsoid);
+M = Is_in (true_ellipsoid);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
@@ -44,14 +49,14 @@ hold off;
 mex GC/GC.cpp
 
 % execute mex file
-[label_map] = GC(I, ellipsoid, [c' X' R'], 0);
+[label_map] = GC(I, ellipsoid, [c' X' R'], 0.5);
 
 l0 = label(label_map, 0);
 hold on;
 scatter3(l0(:,1),l0(:,2),l0(:,3));
 hold off;
 
-l0 = diffMaps(label_map, 0, ellipsoid, 0.5);
+l0 = diffMaps(label_map, 0, true_ellipsoid, 0.5);
 hold on;
 scatter3(l0(:,1),l0(:,2),l0(:,3));
 hold off;
