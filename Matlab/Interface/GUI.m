@@ -138,13 +138,8 @@ function pushbutton4_Callback(hObject, eventdata, handles) % Next
         imagesc(Y1)
         colormap('gray')
         axis image
-        
-        n_image=handles.FileName{1,handles.currentimage};
-        n_image=str2num(n_image(end-7:end-4));% à améliorer, récuprère le numéro de l'image
-        n_imageref=handles.FileName{1,1};
-        n_imageref=str2num(n_imageref(end-7:end-4));% id
 
-        [~]=add_RT(handles.info(1),handles.rt_info,n_image-n_imageref);
+        [~]=add_RT(handles.info(handles.currentimage),handles.rt_info);
        
         hold off;
     end
@@ -163,13 +158,8 @@ function pushbutton5_Callback(hObject, eventdata, handles) %Expert
     imagesc(Y1)
     colormap('gray')
     axis image
-    n_image=handles.FileName{1,handles.currentimage};
-    n_image=str2num(n_image(end-7:end-4));% à améliorer, récuprère le numéro de l'image
-    n_imageref=handles.FileName{1,1};
-    n_imageref=str2num(n_imageref(end-7:end-4));% id
-    
-    
-    [~]=add_RT(handles.info(1),handles.rt_info,n_image-n_imageref);
+
+    [~]=add_RT(handles.info(handles.currentimage),handles.rt_info);
  hold off;
  guidata(hObject,handles);
 
