@@ -83,7 +83,7 @@
 
 \section{Coupes de graphes}
 
-Les méthodes de coupes de graphe permettent de résoudre des problèmes de classification binaire. Généralement coûteuse en temps et en mémoire, ce type de méthode nous servira en bout d'algorithme pour affiner et régulariser la détection des \textit{TODO} dans les images. Cette section présente brièvement la théorie des coupes de graphes et son application à notre projet. De nombreuses informations complémentaires concernant les coupes de graphes peuvent être trouvées dans \cite{bib:GC04, bib:GC05}.		
+Les méthodes de coupes de graphe permettent de résoudre des problèmes de classification binaire. Généralement coûteuse en temps et en mémoire, ce type de méthode nous servira en fin d'algorithme pour affiner et régulariser la détection des \textit{TODO} dans les images. Cette section présente brièvement la théorie des coupes de graphes et son application à notre projet. De nombreuses informations complémentaires concernant les coupes de graphes peuvent être trouvées dans \cite{bib:GC04, bib:GC05}.		
 
 \subsection{Théorie}
 
@@ -104,12 +104,13 @@ où $\lambda$ est appelé terme de régularité et permet de modifier l'importan
 
 \subsubsection{Forme des graphes}
 
-Il est également possible de modéliser le problème sous la forme d'un graphe $\G$. Ce graphe contient l'ensemble des points à classifier représentés sous la forme de ses sommets auxquels on ajoute 2 sommets particuliers généralement notés $s$ (pour \textit{source}) et $t$ (pour \textit{target}). Les points sont tous reliés par des arêtes à $s$ et $t$ qui représentent les 2 \textit{labels} de classification du problème. Par ailleurs, on relie les points entre eux lorsque l'affectation de l'un est fonction de l'affectation de l'autre. On obtient alors un graphe de la forme : \textit{TODO !!!}
+Il est également possible de modéliser le problème sous la forme d'un graphe $\G$. Ce graphe contient l'ensemble des points à classifier représentés sous la forme de ses sommets auxquels on ajoute 2 sommets particuliers généralement notés $s$ (pour \textit{source}) et $t$ (pour \textit{target}). Les points sont tous reliés par des arêtes à $s$ et $t$ qui représentent les 2 \textit{labels} de classification du problème. Par ailleurs, on relie les points entre eux lorsque l'affectation de l'un est fonction de l'affectation de l'autre.\\
+On obtient alors un graphe de la forme : 
 \begin{figure}
 	\begin{center}
-
+		\includegraphics[width=0.8\textwidth]{Images/GC/graphcut.png} 
 	\end{center}
-	\caption{Forme classique d'un graphe utilisable dans les méthodes de coupes de graphe}
+	\caption{Forme classique d'un graphe utilisable dans les méthodes de coupes de graphe. A gauche, le graphe avec les 2 noeuds principaux $s$ et $t$. A droite, un exemple de coupe de graphe. Les arêtes en gras relient les sommets aux labels définis par la coupe.}
 	\label{fig:GC_graphe}
 \end{figure}
 
@@ -122,7 +123,7 @@ On peut alors définir la \textbf{capacité} de la coupe $\mathcal{C}$ par :
 	c(\mathcal{C}) = \sum_{(u,v) \in \mathcal{S} \times \mathcal{T}} c_{uv}
 \]
 où $c_{uv}$ est le poids assigné à l'arête $[u,v]$.\\
-Une coupe de $\G$ est alors minimale lorsqu'il n'existe pas d'autres coupes dont la capacité est inférieur strictement. Cependant, il n'y a en général pas unicité de la coupe minimale. De nombreux algorithme permettent de calculer la coupe minimale d'un graphe via le calcul de son équivalent, le \textbf{flot maximum}. En effet, le flot maximum est facilement calculable avec des algorithmes gloutons par exemple. \\
+Une coupe de $\G$ est alors minimale lorsqu'il n'existe pas d'autres coupes dont la capacité est inférieure strictement. Cependant, il n'y a en général pas unicité de la coupe minimale. De nombreux algorithme permettent de calculer la coupe minimale d'un graphe via le calcul de son équivalent, le \textbf{flot maximum}. En effet, le flot maximum est facilement calculable avec des algorithmes gloutons par exemple. \\
 On cherche donc à se ramener au problème de calcul de coupe minimale en affectant aux arêtes les poids suivants:
 \begin{itemize}
 	\item[$\bullet$] Un terme d'attache aux données, lorsque l'arête relie un sommet quelconque à $t$ ou $s$: $E_{DATA}(\lab, p)$
@@ -142,8 +143,31 @@ On relie donc chaque sommets $p$ à $s_{IN}$ et $s_{OUT}$. En remarquant par ail
 
 \subsubsection{Energies}
 
-mdèle TV ?\\
-proba génrées par partie 2
+L'énergie d'attache aux données se calcule à partir des probabilités définies dans les parties précédentes. Celles-ci permettent d'avoir une information grossière sur la forme de l'objet à détecter. On suppose que cette probabilité est relativement proche de la réalité et on définit ainsi l'énergie d'attache aux données par :
+\begin{center}
+\begin{itemize}
+	\item[$\bullet$] $E_{DATA}(s_{IN}, p) = f(\mathbb{P}(p \in s_{IN}))$
+	\item[$\bullet$] $E_{DATA}(s_{OUT}, p) =f( \mathbb{P}(p \in s_{OUT}))$
+\end{itemize}
+\end{center}
+$f$ peut être la fonction \textit{valeur absolue} ou \textit{carrée} par exemple.
+\\
+\\
+L'énergie de régularisation est nulle lorsque les labels des 2 voxels voisins sont les mêmes. Dans le cas contraire, elle dépend de deux paramètres:
+\begin{itemize}
+	\item[$\bullet$] la différence d'intensité entre les 2 voxels doit être suffisament importante. En effet, 2 voxels voisins d'intensité similaire appartiennent certainement au même objet. La réciproque n'est par contre pas vérifiée.
+	\item[$\bullet$] la localisation de leur barycentre. En effet, celui-ci est sensé appartenir à la frontière séparant les 2 objets.
+\end{itemize}
+En suivant les conseils de \cite{bib:seg}, nous avons utilisé les énergies suivantes:
+\begin{itemize}
+	\item[$\bullet$] pour la différence d'intensité: $E_{SMOOTH 1} \varpropto e^{-\frac{\Delta I^2}{2\sigma^2}}$ où $\Delta I$ est l'écart d'intensité et $\sigma$ est le paramètre de pénalisation.
+	\item[$\bullet$] pour la localisation du barycentre: $E_{SMOOTH 2} \varpropto  \frac{d^2}{2\sigma^2}$ où $d$ est la distance du barycentre à la frontière.
+\end{itemize}
+Les fonctions utilisées peuvent être quelconques à partir du moment où elles vérifient la condition de \textbf{régularité}:
+\begin{equation*}
+\forall i, j \{VOXEL\}, \ \ \forall l_1, l_2 \in \{LABEL\}\ \  E(i\rightarrow l_1, j\rightarrow l_1) + E(i\rightarrow l_2, j\rightarrow l_2) \leq E(i\rightarrow l_1, j\rightarrow l_2) + E(i\rightarrow l_2, j\rightarrow l_1)
+\end{equation*}
+Cette condition est évidemment vérifiée dans le cas précédent puisque l'égalité des labels entraine la nullité du terme de régularité et que les autres termes sont positifs ou nuls.
 
 \bibliographystyle{plain} %Style of Bibliography: plain / apalike / amsalpha / ...
 \bibliography{literature} %You need a file 'literature.bib' for this.
