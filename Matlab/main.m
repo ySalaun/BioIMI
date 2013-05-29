@@ -8,8 +8,14 @@
 % ajoute les différents dossier du projet :à adapter
 % je vous conseille quand même d'utiliser ce patient pour l'instant
 % avec les paramètres qui suivent vous aurez un beau nodule :)
-addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
-path_dcm='/home/raphal/Documents/2A/Projet_IMI/DB/017 BA - 000112377/';
+
+%% Yohann
+addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
+path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
+
+%% Raphael
+% addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
+% path_dcm='/home/raphal/Documents/2A/Projet_IMI/DB/017 BA - 000112377//';
 
 path_scan='CT - 20121226 - Studydescription/1/';
 pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
@@ -47,9 +53,9 @@ Y1=squeeze(X(:,:,1,1));
 rt=dicominfo(strcat(path_dcm,pathrt));
 figure;
 hold on;
-imagesc(Y1)
-colormap('gray')
-axis image
+imagesc(Y1);
+colormap('gray');
+axis image;
 [ContourData,ImagePosition,PixelSpacing,SliceThickness]=add_RT(info(1),rt,240);
 hold off;
 

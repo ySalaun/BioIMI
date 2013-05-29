@@ -134,22 +134,22 @@ double smoothness(	const int label1, const int label2,
 					const Vector3D &pos1, const Vector3D &pos2,
                     const Ellipsoid &e, const double lambda)
 {
-	double maxPen = 5;
     if(label1 == label2){
 		return 0.0;
 	}
 	else{
-		Vector3D bar = middle(pos1, pos2);
-		double diff  = (color1-color2);
+		Vector3D bar 	= middle(pos1, pos2);
+		double diff  	= (color1-color2);
+		double sigma1	= 5;
+		double sigma2	= 3;
 		
         // penalization on the location of the barycenter
-        double smooth1 = dis2border(e, bar);
-        smooth1 = smooth1*smooth1;
-        smooth1 = (smooth1 > maxPen)? maxPen : smooth1 ;
+        double smooth1	= dis2border(e, bar);
+        smooth1			= smooth1*smooth1/(sigma1*sigma1);
+		smooth1			= (smooth1 > 1)? 1:smooth1;
         
         // penalization on the difference of their color intensity
-        double smooth2 = 1 / (diff*diff);
-        smooth2 = (smooth2 > maxPen)? maxPen : smooth2 ;
+        double smooth2	= exp(-diff*diff/(2*sigma2*sigma2));
         
         return smooth1 * lambda + smooth2 * (1 - lambda);
 	}
