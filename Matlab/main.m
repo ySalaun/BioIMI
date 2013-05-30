@@ -9,9 +9,14 @@
 % je vous conseille quand même d'utiliser ce patient pour l'instant
 % avec les paramètres qui suivent vous aurez un beau nodule :)
 
+%% Marie
+addpath(genpath('C:\Users\Marie\Documents\GitHub\BioIMI\Matlab'));
+path_dcm='C:\Users\Marie\Documents\GitHub\017 BA - 000112377//';
+
+
 %% Yohann
-addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
-path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
+% addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
+% path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
 
 %% Raphael
 % addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
@@ -56,7 +61,10 @@ hold on;
 imagesc(Y1);
 colormap('gray');
 axis image;
-[ContourData,ImagePosition,PixelSpacing,SliceThickness]=add_RT(info(1),rt,240);
+[ContourData,ImagePosition,PixelSpacing,SliceThickness]=add_RT(info,rt);
 hold off;
 
+% Calcul des parametres, ATTENTION probl�me si l'ellipsoide a un rayon de 1
+
+[ct,Xt,Rt] = parametres(E); % Parametres approches par la PCA
 

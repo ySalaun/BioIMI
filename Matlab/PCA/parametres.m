@@ -6,12 +6,12 @@ function [ c, X, R ] = parametres( E )
 
 %Compute the voxel in the nodule
 M=Is_in ( E );
-m=size(M,1)
+m=size(M,1);
 
 % Compute the parameters c and X
 [Vect, Val, Mean]= pca ( M, 3 );
 
-Val= sqrt(Val)
+Val= sqrt(Val);
 
 c=Mean;
 
@@ -21,9 +21,9 @@ X=Vect';
 
 R=zeros(3,1);
 
-R(1)=nthroot(3.*m/(4*pi)*Val(1)/Val(3)*Val(1)/Val(2),3);
-R(2)=R(1)*Val(2)/Val(1);
-R(3)=R(1)*Val(3)/Val(1);
+R(1,1)=nthroot(3.*m/(4*pi)*Val(1)/Val(3)*Val(1)/Val(2),3);
+R(2,1)=R(1)*Val(2)/Val(1);
+R(3,1)=R(1)*Val(3)/Val(1);
 
 end
 
