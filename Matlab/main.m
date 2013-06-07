@@ -2,6 +2,9 @@
 % main  %
 % ----- %
 
+%% PARAMETERS
+lambda = 0.5;                               % smoothness coefficient
+
 % sans interface graphique
 
 
@@ -66,5 +69,20 @@ hold off;
 
 % Calcul des parametres, ATTENTION problème si l'ellipsoide a un rayon de 1
 
-[ct,Xt,Rt] = parametres(E); % Parametres approches par la PCA
+[ct,Xt,Rt] = parametres(Z); % Parametres approches par la PCA
+[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt); % Précision avec hough transform
+
+%% GRAPH CUT
+
+% compile cpp file
+mex GC/GC.cpp
+
+% execute mex file
+I = X(280:340,350:410,:);                   % crop of picture
+[label_map] = GC(I, Z, [c' Vec' R'], lambda);
+
+l0 = label(label_map, 0);
+hold on;
+scatter3(l0(:,1),l0(:,2),l0(:,3));
+hold off;
 
