@@ -10,14 +10,14 @@ function [ c, R, Vec] = Hough_transform( I, c_pca, R_pca, Vec_pca )
 % Only 9 variables : center, axis 1, then two coordonates of axis 2 and the ray of axis 3
 
 % axe 1
-x1_var=-3:1:3;  % varier de 1
-y1_var=-3:1:3;
-z1_var=-3:1:3;
+x1_var=-2:1:2;  % varier de 1
+y1_var=-2:1:2;
+z1_var=-2:1:2;
 % axe 2
-x2_var=-3:1:3;
-y2_var=-3:1:3;
+x2_var=-2:1:2;
+y2_var=-2:1:2;
 % rayon 3
-r3_var=-3:1:3; % varier de 3
+r3_var=-2:1:2; % varier de 3
 % centre
 x0_var=3;
 y0_var=3;  % varier de 3
@@ -25,9 +25,9 @@ z0_var=3;
 [dY,dX,dZ] = meshgrid(0:x0_var,0:y0_var,0:z0_var);
 
 s=size(I);
-Int1=max(1,ceil(c_pca(1)-x0_var-R_pca(1)-x1_var)):min(s(1),ceil(c_pca(1)+x0_var+R_pca(1)+x1_var));
-Int2=max(1,ceil(c_pca(2)-y0_var-R_pca(2)-y1_var)):min(s(2),ceil(c_pca(2)+y0_var+R_pca(2)+y1_var));
-Int3=max(1,ceil(c_pca(3)-z0_var-R_pca(3)-z1_var)):min(s(3),ceil(c_pca(3)+z0_var+R_pca(3)+z1_var));
+Int1=max(1,ceil(c_pca(1)-x0_var-R_pca(1)+x1_var(1))):min(s(1),ceil(c_pca(1)+x0_var+R_pca(1)-x1_var(1)));
+Int2=max(1,ceil(c_pca(2)-y0_var-R_pca(2)+y1_var(1))):min(s(2),ceil(c_pca(2)+y0_var+R_pca(2)-y1_var(1)));
+Int3=max(1,ceil(c_pca(3)-z0_var-R_pca(3)+z1_var(1))):min(s(3),ceil(c_pca(3)+z0_var+R_pca(3)-z1_var(1)));
 
 IResized=I(Int1,Int2,Int3);
 
