@@ -68,13 +68,11 @@ end
 
 Y1=squeeze(X(:,:,1,1));
 rt=dicominfo(strcat(path_dcm,pathrt));
-figure;
-hold on;
-imagesc(Y1);
-colormap('gray');
-axis image;
 [contours]=add_RT(info,rt);
-hold off;
+
+if display_on
+    display_RT(X,contours);
+end
 
 % Calcul des parametres, ATTENTION probl�me si l'ellipsoide a un rayon de 1
 

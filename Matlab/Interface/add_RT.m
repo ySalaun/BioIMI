@@ -1,7 +1,9 @@
 function [contours]=add_RT(dcm_info,rt_info)
-% récupère des informations sur les images afin d'appeler plot_contour par
-%       exemple
 % dcm_info,rt_info : informations sur les images (dicominfo)
+% renvoie la position (en voxel) des contours dans l'image associé à dcm_info
+%           sous forme de cell.
+
+% récupère des informations sur les images 
 
 ImagePosition=dcm_info.ImagePositionPatient;
 SliceThickness=dcm_info.SliceThickness;

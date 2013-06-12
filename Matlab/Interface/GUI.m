@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 26-May-2013 20:42:53
+% Last Modified by GUIDE v2.5 12-Jun-2013 23:01:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,6 +83,7 @@ function pushbutton1_Callback(hObject, eventdata, handles) % Parcourir
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+%Charge les fichiers dcm
 [FileName,PathName] = uigetfile('*.dcm','MultiSelect','on','Selectionnez les images');
 handles.FileName=FileName;
 
@@ -90,28 +91,20 @@ if isequal(class(FileName),'char') % un seul fichier
     FileName={FileName};
 end
 handles.FileName=FileName;
-if ~(isequal(FileName,0) || isequal(PathName,0))
+if ~(isequal(FileName,0) || isequal(PathName,0)) % si on n'a pas annuler
     
     [handles.Y,handles.info]=read_dicom_name(FileName,PathName);
     handles.nimages=length(FileName);
     handles.currentimage=1;
-	Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
-    
-    handles.rt=0;
-    
-	%imshow(Y1);
-    set(handles.text1,'String',handles.FileName{1,1});
-    imagesc(Y1)
-    colormap('gray')
-    axis image
-	guidata(hObject,handles);
-    %setappdata(handles.figure1,'Signal',x); 
-    %setappdata(handles.figure1,'FreqEch',Fe); 
+    handles.rt_info=0;
 
+    Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
+    gui_refresh(Y1,handles.info(handles.currentimage),handles.rt_info);
+      
+    guidata(hObject,handles);
 end
 
 	
-
 % --- Executes on button press in pushbutton2.
 function pushbutton2_Callback(hObject, eventdata, handles) % Movie
 	display_scans(handles.Y,0);
@@ -119,30 +112,17 @@ function pushbutton2_Callback(hObject, eventdata, handles) % Movie
 % --- Executes on button press in pushbutton3.
 function pushbutton3_Callback(hObject, eventdata, handles) % Selection
 	[~,rect]=imcrop;
-	handles.rect=rect;
+	handles.rect=[handles.currentimage rect];
 	guidata(hObject,handles);
 
 
 % --- Executes on button press in pushbutton4.
 function pushbutton4_Callback(hObject, eventdata, handles) % Next
     handles.currentimage=mod(handles.currentimage,handles.nimages)+1;
-	Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
-	%imshow(Y1);
+    Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
     set(handles.text1,'String',handles.FileName{1,handles.currentimage});
-    imagesc(Y1)
-    colormap('gray')
-    axis image
-    
-   if (handles.rt)
-        hold on;
-        imagesc(Y1)
-        colormap('gray')
-        axis image
 
-        [~]=add_RT(handles.info(handles.currentimage),handles.rt_info);
-       
-        hold off;
-    end
+    gui_refresh(Y1,handles.info(handles.currentimage),handles.rt_info);
         
     guidata(hObject,handles);
 
@@ -151,16 +131,52 @@ function pushbutton4_Callback(hObject, eventdata, handles) % Next
 function pushbutton5_Callback(hObject, eventdata, handles) %Expert
   [FileName,PathName] = uigetfile('*.dcm','MultiSelect','off','Selectionnez l''image');
   handles.rt_info=dicominfo(strcat(PathName,FileName));
-  handles.rt=1;
   Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
-  
-  hold on;
-    imagesc(Y1)
-    colormap('gray')
-    axis image
 
-    [~]=add_RT(handles.info(handles.currentimage),handles.rt_info);
- hold off;
- guidata(hObject,handles);
+  gui_refresh(Y1,handles.info(handles.currentimage),handles.rt_info);
+
+  guidata(hObject,handles);
 
   
+
+
+% --- Executes on button press in pushbutton6.
+function pushbutton6_Callback(hObject, eventdata, handles) % Main
+% hObject    handle to pushbutton6 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% parametres
+lambda = 0.5;                               % smoothness coefficient
+vpar_gabor=[5 1 1 1; % paramètres des filtres de gabor
+        20 1 2 1;    % a,b,c,sigma : "cos(ax+by+cz)exp(-x^2/sigma^2)"
+        1.5 0 1 0;
+        1 1 0 0]; 
+
+
+siz=size(handles.Y);    
+
+z=handles.rect(1);
+zweight=max(handles.rect(4:5));
+zm=max(1,     floor(z-zweight));
+zM=min(siz(4),floor(z+zweight));
+
+xmin=handles.rect(2);
+xm=floor(xmin);
+xM=floor(xmin+handles.rect(4));
+
+ymin=handles.rect(3);
+ym=floor(ymin);
+yM=floor(ymin+handles.rect(5));
+
+X=handles.Y(ym:yM,xm:xM,1,zm:zM);
+
+Yg=convolution_gabor(X,vpar_gabor);
+Z=classification_acp(Yg);
+Zmasque=Masque(Z);
+
+
+
+
+
