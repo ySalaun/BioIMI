@@ -4,9 +4,16 @@
 
 %% PARAMETERS
 lambda = 0.5;                               % smoothness coefficient
+vpar_gabor=[5 1 1 1; % paramètres des filtres de gabor
+        20 1 2 1;    % a,b,c,sigma : "cos(ax+by+cz)exp(-x^2/sigma^2)"
+        1.5 0 1 0;
+        1 1 0 0]; 
 
-% sans interface graphique
 
+% sans interface graphique (pour l'interface gui;)
+
+% affichage graphique
+display_on = 0;
 
 % ajoute les différents dossier du projet :à adapter
 % je vous conseille quand même d'utiliser ce patient pour l'instant
@@ -33,9 +40,6 @@ pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
 % /!\ j'ai l'impression que les images sont numérotées à l'envers d'où :
 [X,info]=read_dicom(140:1:170,strcat(path_dcm,path_scan));
 
-% paramètres des filtres de gabor (la taille du noyau et définie dans
-% convolution_gabor
-vpar=[5 1 1 1;20 1 2 1;1.5 0 1 0;1 1 0 0];
 
 % application des filtres à l'image 3D X (l*h*1*p ou l*h*p) on peut donc
 % sélectionner manuellement la zone qui nous intéresse X(1:10,:,:)
@@ -43,15 +47,20 @@ vpar=[5 1 1 1;20 1 2 1;1.5 0 1 0;1 1 0 0];
 % -> taille réduite
 % la position du nodule est environ 382,313, prévoir un peu de marge
 % /!\ inverser X et Y
-Yg=convolution_gabor(X(280:340,350:410,:),vpar);
+Yg=convolution_gabor(X(280:340,350:410,:),vpar_gabor);
 
 % classement par ACP
 % Z est donc la matrice 3D de proba qui vous intéresse
 Z=classification_acp(Yg);
+Zmasque=Masque(Z);
 
 % affichage : le deuxieme parametre vaut 1 quand on egalise le contraste
-display_scans(Z,1);
-display_scans(X,0);
+if display_on
+    display_scans(Z,1);
+    display_scans(X,0);
+    figure;
+    imagesc(YY);
+end
 
 % Comparaison
 % apparement ça ne marche pas, faut vérifier entre autre l'orientation des
@@ -64,13 +73,13 @@ hold on;
 imagesc(Y1);
 colormap('gray');
 axis image;
-[ContourData,ImagePosition,PixelSpacing,SliceThickness]=add_RT(info,rt);
+[contours]=add_RT(info,rt);
 hold off;
 
-% Calcul des parametres, ATTENTION probl�me si l'ellipsoide a un rayon de 1
+% Calcul des parametres, ATTENTION probl�me si l'ellipsoide a un rayon de 1
 
 [ct,Xt,Rt] = parametres(Z); % Parametres approches par la PCA
-[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt); % Pr�cision avec hough transform
+[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt); % Pr�cision avec hough transform
 
 %% GRAPH CUT
 

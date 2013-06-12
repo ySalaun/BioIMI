@@ -1,8 +1,7 @@
-function [ContoursData,ImagePosition,PixelSpacing,SliceThickness]=add_RT(dcm_info,rt_info)
+function [contours]=add_RT(dcm_info,rt_info)
 % récupère des informations sur les images afin d'appeler plot_contour par
 %       exemple
 % dcm_info,rt_info : informations sur les images (dicominfo)
-
 
 ImagePosition=dcm_info.ImagePositionPatient;
 SliceThickness=dcm_info.SliceThickness;
@@ -33,16 +32,12 @@ for in=1:Ln
     Lc=length(fields);
     for ic=1:Lc
         CD=NoduleData.(fields{ic}).ContourData;
-        z1=-1*(CD(3)-ImagePosition(3))/SliceThickness;% hauteur du contour en pixels  
-        if (abs(z1)<2)
-            disp(z1);
-            % Création des vecteurs de coordonnées : x, y
-            x=(CD(1:3:end)-ImagePosition(1))/PixelSpacing;
-            y=(CD(2:3:end)-ImagePosition(2))/PixelSpacing;
-            %z=(ContourData(3:3:end)-ImagePosition(3))/SliceThickness;
-            %f=find(abs(z-z0)<1)
-            plot(x,y);
-        end;
+        % Création des vecteurs de coordonnées : x, y
+        x=(CD(1:3:end)-ImagePosition(1))/PixelSpacing;
+        y=(CD(2:3:end)-ImagePosition(2))/PixelSpacing;
+        z=(CD(3:3:end)-ImagePosition(3))/SliceThickness;
+                    
+        contours{in}{ic}= [x y z];
     end
 end
 
