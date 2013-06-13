@@ -22,7 +22,7 @@ r3_var=2; % on peut mettre plus car la variation s'arrête quand elle devient inu
 x0_var=3;
 y0_var=3;  % varier de 3
 z0_var=3;
-[dY,dX,dZ] = meshgrid(0:x0_var,0:y0_var,0:z0_var);
+[dX,dY,dZ] = meshgrid(0:x0_var,0:y0_var,0:z0_var);
 
 s=size(I);
 Int1=max(1,ceil(c_pca(1)-x0_var-R_pca(1)+x1_var(1))):min(s(1),ceil(c_pca(1)+x0_var+R_pca(1)-x1_var(1)));
