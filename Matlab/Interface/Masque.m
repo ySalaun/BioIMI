@@ -21,8 +21,17 @@ for xx=1:siz(1)
         end
     end
 end
-figure;
-imagesc(YY);
 
+YY2=YY;
+
+for xx=2:siz(1)-1
+    for yy=2:siz(2)-1
+        if (YY2(xx,yy)==1)
+            if(YY2(xx-1,yy)==0 || YY2(xx+1,yy)==0 || YY2(xx,yy-1)==0 || YY2(xx,yy+1)==0)
+                YY(xx,yy)=0;
+            end        
+        end
+    end
+end
 
 end

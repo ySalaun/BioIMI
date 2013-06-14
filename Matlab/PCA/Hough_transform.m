@@ -10,12 +10,12 @@ function [ c, R, Vec] = Hough_transform( I, c_pca, R_pca, Vec_pca )
 % Only 9 variables : center, axis 1, then two coordonates of axis 2 and the ray of axis 3
 
 % axe 1 non normé : 3 variables pour direction et taille
-x1_var=-2:1:2;  % varier de 2 -> rayon varie de 3.4 ; varier de 1 -> rayon varie de 1.7
-y1_var=-2:1:2;
-z1_var=-2:1:2;
+x1_var=0;%-2:1:2;  % varier de 2 -> rayon varie de 3.4 ; varier de 1 -> rayon varie de 1.7
+y1_var=0;%-2:1:2;
+z1_var=0;%-2:1:2;
 % axe 2
-x2_var=-2:1:2; % varier de 2
-y2_var=-2:1:2;
+x2_var=0;%-2:1:2; % varier de 2
+y2_var=0;%-2:1:2;
 % rayon 3
 r3_var=2; % on peut mettre plus car la variation s'arrête quand elle devient inutile
 % centre
@@ -42,7 +42,7 @@ M = Matrix(Int1, Int2, Int3, c_pca, R_pca, Vec_pca);
 
 volume=sum(sum (sum(M)));
 
-efficiency=sum(sum(sum(M.*IResized)))-1./2*volume;
+efficiency=sum(sum(sum(M.*IResized)))-0.2*volume;
 
 efficiency_max=efficiency; 
 coeff_opt=[c_pca R_pca' Vec_pca(1,:) Vec_pca(2,:) Vec_pca(3,:)];

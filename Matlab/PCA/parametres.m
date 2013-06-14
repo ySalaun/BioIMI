@@ -1,17 +1,17 @@
-function [ c, X, R ] = parametres( E )
+function [ c, X, R ] = parametres( E, seuil )
 %Compute all the arguments of the ellipsoïde :
 %   - R^3 vector c:     center of the ellipsoid
 %   - M_{3x3} matrix X: the lines are directions of the ellipsoid
 %   - R^3 vector R:     rays of the ellipsoid
 
 %Compute the voxel in the nodule
-M=Is_in ( E );
+M=Is_in ( E, seuil );
 m=size(M,1);
 
 % Compute the parameters c and X
 [Vect, Val, Mean]= pca ( M, 3 );
 
-Val= sqrt(Val);
+Val= sqrt(Val)
 
 c=Mean;
 

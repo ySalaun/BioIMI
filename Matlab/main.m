@@ -8,6 +8,8 @@ vpar_gabor=[5 1 1 1; % paramètres des filtres de gabor
         20 1 2 1;    % a,b,c,sigma : "cos(ax+by+cz)exp(-x^2/sigma^2)"
         1.5 0 1 0;
         1 1 0 0]; 
+    
+seuil=0.2;
 
 
 % sans interface graphique (pour l'interface gui;)
@@ -52,7 +54,15 @@ Yg=convolution_gabor(X(280:340,350:410,:),vpar_gabor);
 % classement par ACP
 % Z est donc la matrice 3D de proba qui vous intéresse
 Z=classification_acp(Yg);
+TestSize=size(Z)
 Zmasque=Masque(Z);
+Y1=squeeze(X(:,:,1,1));
+imagesc(Zmasque);
+for p=1:size(Z,3)
+    Z(:,:,p)=Z(:,:,p).*Zmasque;
+end
+Z1=squeeze(Z(:,:,10));
+imagesc(Z1);
 
 % affichage : le deuxieme parametre vaut 1 quand on egalise le contraste
 if display_on
@@ -66,30 +76,37 @@ end
 % apparement ça ne marche pas, faut vérifier entre autre l'orientation des
 % axes. Et je ne suis pas très sur de la définition de ImagePositionPatient
 
-Y1=squeeze(X(:,:,1,1));
 rt=dicominfo(strcat(path_dcm,pathrt));
 [contours]=add_RT(info,rt);
 
+hold on
 if display_on
     display_RT(X,contours);
 end
 
 % Calcul des parametres, ATTENTION probl�me si l'ellipsoide a un rayon de 1
 
-[ct,Xt,Rt] = parametres(Z); % Parametres approches par la PCA
-[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt); % Pr�cision avec hough transform
+[ct,Xt,Rt] = parametres(Z, seuil) % Parametres approches par la PCA
+colormap('gray');
+vtheta = 0:0.01:3.14*2;
+Xcenter=ct(1) + 22*cos(vtheta);
+Ycenter=ct(2) + 22*sin(vtheta);
+plot(Ycenter, Xcenter)
+
+hold off
+[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt) % Pr�cision avec hough transform
 
 %% GRAPH CUT
 
 % compile cpp file
-mex GC/GC.cpp
+%mex GC/GC.cpp
 
 % execute mex file
-I = X(280:340,350:410,:);                   % crop of picture
-[label_map] = GC(I, Z, [c' Vec' R'], lambda);
-
-l0 = label(label_map, 0);
-hold on;
-scatter3(l0(:,1),l0(:,2),l0(:,3));
-hold off;
+% I = X(280:340,350:410,:);                   % crop of picture
+% [label_map] = GC(I, Z, [c' Vec' R'], lambda);
+% 
+% l0 = label(label_map, 0);
+% hold on;
+% scatter3(l0(:,1),l0(:,2),l0(:,3));
+% hold off;
 
