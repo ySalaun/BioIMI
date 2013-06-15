@@ -24,6 +24,6 @@ end
 
 % ouverture de l'image binaire (erosion + dilataion)
 
-se = strel('disk',3);        
+se = strel('disk',5);        
 YY = imopen(YY,se);
 end

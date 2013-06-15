@@ -57,15 +57,17 @@ Z=classification_acp(Yg);
 TestSize=size(Z)
 
 Masq=Masque(Z);
+
+% debruitage
 Zm=Z;
 for p=1:size(Z,3)
     Zm(:,:,p)=Z(:,:,p).*Masq;
 end
 
+%imagesc(squeeze(Zm(:,30,:))); % permet de voir la tranche etudie par l'acp et HT
+
 X1=squeeze(X(:,:,1,1));
-Z1=squeeze(Z(:,:,10));
-
-
+Z1=squeeze(Z(:,31,:));
 
 imagesc(Z1);
 
@@ -91,17 +93,20 @@ if display_on
     display_RT(X,contours);
 end
 
-% Calcul des parametres, ATTENTION probl�me si l'ellipsoide a un rayon de 1
+%% Calcul des parametres, ATTENTION probleme si l'ellipsoide a un rayon de 1
 
-[ct,Xt,Rt] = parametres(Z, seuil) % Parametres approches par la PCA
+[ct,Xt,Rt] = parametres(Zm, seuil) % Parametres approches par la PCA
+
+[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt,seuil) % Precision avec hough transform
+
+%affichage pour cet exemple en particulier de l'ellipse 
 colormap('gray');
 vtheta = 0:0.01:3.14*2;
-Xcenter=ct(1) + 22*cos(vtheta);
-Ycenter=ct(2) + 22*sin(vtheta);
+Xcenter=ct(1) + R(2)*cos(vtheta);
+Ycenter=ct(2) + R(3)*sin(vtheta);
 plot(Ycenter, Xcenter)
 
 hold off
-[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt) % Pr�cision avec hough transform
 
 %% GRAPH CUT
 

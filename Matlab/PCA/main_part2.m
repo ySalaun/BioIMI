@@ -16,7 +16,7 @@ size (M,1)
 
 [ct,Xt,Rt] = parametres(E, seuil)
 
-%[c, R, Vec] = Hough_transform(E,ct,Rt,Xt)
+%[c, R, Vec] = Hough_transform(E,ct,Rt,Xt,seuil)
 
 %[x, y, z] = ellipsoid(ct(1),ct(2),ct(3),Rt(1),Rt(2),Rt(3),30);
 %hMesh=mesh(x,y,z);
