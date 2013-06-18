@@ -22,13 +22,13 @@ display_on = 0;
 % avec les paramètres qui suivent vous aurez un beau nodule :)
 
 %% Marie
-addpath(genpath('C:\Users\Marie\Documents\GitHub\BioIMI\Matlab'));
-path_dcm='C:\Users\Marie\Documents\GitHub\017 BA - 000112377//';
+% addpath(genpath('C:\Users\Marie\Documents\GitHub\BioIMI\Matlab'));
+% path_dcm='C:\Users\Marie\Documents\GitHub\017 BA - 000112377//';
 
 
 %% Yohann
-% addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
-% path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
+addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
+path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
 
 %% Raphael
 % addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
@@ -111,14 +111,32 @@ hold off
 %% GRAPH CUT
 
 % compile cpp file
-%mex GC/GC.cpp
+mex GC/GC.cpp
+
+% parameters for cropped picture
+X1 = 280; X2 = 340;
+Y1 = 350; Y2 = 410;
+I = X(X1:X2,Y1:Y2,:);
+
+% draw PCA ellipsoid
+PCA_ellipsoid = generate_ellipsoid(size(I), c, Vec, R, [1 0], [0 0]);
+M = Is_in (PCA_ellipsoid, 0.5);
+hold on;
+scatter3(M(:,1),M(:,2),M(:,3));
+hold off;
+
+% draw proba ellipsoid
+M = Is_in (Z, 0.5);
+hold on;
+scatter3(M(:,1),M(:,2),M(:,3));
+hold off;
 
 % execute mex file
-% I = X(280:340,350:410,:);                   % crop of picture
-% [label_map] = GC(I, Z, [c' Vec' R'], lambda);
-%
-% l0 = label(label_map, 0);
-% hold on;
-% scatter3(l0(:,1),l0(:,2),l0(:,3));
-% hold off;
+[label_map] = GC(double(I), double(Z), [c' Vec' R'], lambda);
+
+
+l0 = label(label_map, 0);
+hold on;
+scatter3(l0(:,1),l0(:,2),l0(:,3));
+hold off;
 

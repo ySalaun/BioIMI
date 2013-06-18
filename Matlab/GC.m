@@ -36,7 +36,7 @@ if generated_input
 end
 
 % display ellipsoid
-M = Is_in (true_ellipsoid);
+M = Is_in (true_ellipsoid, 0.5);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;

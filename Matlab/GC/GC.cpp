@@ -142,15 +142,12 @@ double smoothness(	const int label1, const int label2,
 		double diff  	= (color1-color2);
 		double sigma1	= 5;
 		double sigma2	= 3;
-		
         // penalization on the location of the barycenter
         double smooth1	= dis2border(e, bar);
         smooth1			= smooth1*smooth1/(sigma1*sigma1);
 		smooth1			= (smooth1 > 1)? 1:smooth1;
-        
         // penalization on the difference of their color intensity
         double smooth2	= exp(-diff*diff/(2*sigma2*sigma2));
-        
         return smooth1 * lambda + smooth2 * (1 - lambda);
 	}
     error_msg("error during smoothness term computation");
@@ -197,7 +194,7 @@ void graph_cut(double* I, double* proba_map, double* label_map, Ellipsoid e, int
 		{
 			for(i = 0; i < W; ++i)
 			{
-				++p;									// current pixel coordinate
+                ++p;									// current pixel coordinate
 				
 				// data terms
 				E0 = data(proba_map[p], lambda, 0);     // data term for label 0
@@ -209,7 +206,6 @@ void graph_cut(double* I, double* proba_map, double* label_map, Ellipsoid e, int
 				else{                                   // edge pixel p	->	sink
 					g -> add_tweights(nodes[p], 0, E0-E1);
 				}
-				
 				// smoothness terms
 				// i-neighbor
 				if(i > 1)
@@ -218,21 +214,20 @@ void graph_cut(double* I, double* proba_map, double* label_map, Ellipsoid e, int
 					E01 = smoothness(0, 1, I[p], I[p-1], Vector3D(i, j, k), Vector3D(i-1, j, k), e, lambda);
 					E10 = smoothness(1, 0, I[p], I[p-1], Vector3D(i, j, k), Vector3D(i-1, j, k), e, lambda);
 					E11 = smoothness(1, 1, I[p], I[p-1], Vector3D(i, j, k), Vector3D(i-1, j, k), e, lambda);
-					
 					if(E10 > E00){                      // edge source		->	pixel p
 						g -> add_tweights(nodes[p], E10-E00, 0);
 					}
 					else{                               // edge pixel p		->	sink
 						g -> add_tweights(nodes[p], 0, E00-E10);
 					}
-					
+
 					if(E11 > E10){                      // edge source		->	pixel p - 1
 						g -> add_tweights(nodes[p - 1], E11-E10, 0);
 					}
 					else{                               // edge pixel p - 1	->	sink
 						g -> add_tweights(nodes[p - 1], 0, E10-E11);
 					}
-					
+
 					if(E01 + E10 - E00 - E11 >= 0){     // edge pixel p 	->	pixel p - 1
 						g -> add_edge(nodes[p], nodes[p - 1], E01 + E10 - E00 - E11, 0);
 					}
