@@ -18,13 +18,6 @@ function [ e ] = generate_ellipsoid( s, c, X, R, m, sigma)
 % m = [m1 m2];
 % sigma = [sigma1 sigma2];
 
-% quick test for size
-for i=1:3
-    if s(i) < 2*R(i) || s(i) < c(i) + R(i) || c(i) < R(i)
-        disp('error, the ellispoid needs to be shorter than the whole picture')
-    end
-end
-
 % generate whole picture with zeros
 e = zeros(s(1), s(2), s(3));
 

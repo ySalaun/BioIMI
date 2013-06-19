@@ -9,16 +9,19 @@ if generated_input
 	s = [n n n];
 	% center of the ellipsoid
 	c = [n/2 n/2 n/2];
+    c = [34.4766   30.8156   10.8640];
 	% axis directions
 	X1 = [1 0 0];
 	X2 = [0 0 1];
 	X3 = [0 1 0];
 	X = [X1/sqrt(sum(X1.*X1)) ; X2/sqrt(sum(X2.*X2)) ; X3/sqrt(sum(X3.*X3))];
+    X = [ 0.0717   -0.1028   -0.9921 ;  0.9650    0.2589    0.0429 ; -0.2524    0.9604   -0.1177 ];
 	% axis rays
 	R = [5 8 15];
-	% law inside and outside
-	m = [0.7 0.3];
-	sigma = [0.3 0.3];
+    R = [12.1924    6.8147    5.4075];
+    % law inside and outside
+	m = [0.35 0];
+	sigma = [0.05 0];
 
 	% generate proba_ellipsoid
 	ellipsoid = generate_ellipsoid(s, c, X, R, m, sigma);
@@ -49,7 +52,7 @@ hold off;
 mex GC/GC.cpp
 
 % execute mex file
-[label_map] = GC(I, ellipsoid, [c' X' R'], 0.5);
+[label_map] = GC(I, ellipsoid, [c' X' R'], 0);
 
 l0 = label(label_map, 0);
 hold on;
