@@ -20,8 +20,8 @@ if generated_input
 	R = [5 8 15];
     R = [12.1924    6.8147    5.4075];
     % law inside and outside
-	m = [0.35 0];
-	sigma = [0.05 0];
+	m = [0.7 0.3];
+	sigma = [0 0];
 
 	% generate proba_ellipsoid
 	ellipsoid = generate_ellipsoid(s, c, X, R, m, sigma);
@@ -39,7 +39,7 @@ if generated_input
 end
 
 % display ellipsoid
-M = Is_in (true_ellipsoid, 0.5);
+M = Is_in (ellipsoid, 0.5);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
@@ -51,8 +51,10 @@ hold off;
 % compile cpp file
 mex GC/GC.cpp
 
+for lambda = 0:0.1:1
+
 % execute mex file
-[label_map] = GC(I, ellipsoid, [c' X' R'], 0);
+[label_map] = GC(I, ellipsoid, [c' X' R'], 0.5);
 
 l0 = label(label_map, 0);
 hold on;
@@ -63,3 +65,8 @@ l0 = diffMaps(label_map, 0, true_ellipsoid, 0.5);
 hold on;
 scatter3(l0(:,1),l0(:,2),l0(:,3));
 hold off;
+
+lambda
+ratio = sum(sum(sum(l0>0.5)))/sum(sum(sum(true_ellipsoid)))*100
+
+end

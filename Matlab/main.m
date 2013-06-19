@@ -49,7 +49,7 @@ pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
 % -> taille réduite
 % la position du nodule est environ 382,313, prévoir un peu de marge
 % /!\ inverser X et Y
-Yg=convolution_gabor(X(280:340,350:409,:),vpar_gabor);
+Yg=convolution_gabor(X(280:340,350:410,:),vpar_gabor);
 
 % classement par ACP
 % Z est donc la matrice 3D de proba qui vous intéresse
@@ -116,9 +116,15 @@ mex GC/GC.cpp
 % parameters for cropped picture
 X1 = 280; X2 = 340;
 Y1 = 350; Y2 = 410;
-s = size(X);
-Z1 = 0; Z2 = s(0);
-I = X(X1+2:X2-2,Y1+2:Y2-2,Z1+2:Z2-2);
+Z1 = 1; Z2 =  size(X,4);
+I = zeros(X2-X1-3, Y2-Y1-3, Z2-Z1-3);
+for x = X1+2:X2-2
+    for y = Y1+2:Y2-2
+        for z = Z1+2:Z2-2
+            I(x-X1-1, y-Y1-1, z-Z1-1) = X(x, y, 1, z);
+        end
+    end
+end
 
 % draw PCA ellipsoid
 PCA_ellipsoid = generate_ellipsoid(size(I), c, Vec, R, [1 0], [0 0]);
@@ -147,7 +153,7 @@ scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
 % execute mex file
-[label_map] = GC(double(I), double(Ztest), [c' Vec' R'], 0);
+[label_map] = GC(double(I), double(Ztest), [c' Vec' R'], 0.5);
 
 % display final ellipsoid
 l0 = label(label_map, 0);

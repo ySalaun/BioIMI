@@ -82,7 +82,7 @@
 
 \section{Coupes de graphes}
 
-Les méthodes de coupes de graphe permettent de résoudre des problèmes de classification binaire. Généralement coûteuse en temps et en mémoire, ce type de méthode nous servira en fin d'algorithme pour affiner et régulariser la détection des \textit{TODO} dans les images. Cette section présente brièvement la théorie des coupes de graphes et son application à notre projet. De nombreuses informations complémentaires concernant les coupes de graphes peuvent être trouvées dans \cite{bib:GC04, bib:GC05}.		
+Les méthodes de coupes de graphe permettent de résoudre des problèmes de classification binaire. Généralement coûteuse en temps et en mémoire, ce type de méthode nous servira en fin d'algorithme pour affiner et régulariser la détection des nodules dans les images. Cette section présente brièvement la théorie des coupes de graphes et son application à notre projet. De nombreuses informations complémentaires concernant les coupes de graphes peuvent être trouvées dans \cite{bib:GC04, bib:GC05}.		
 
 \subsection{Théorie}
 
@@ -105,7 +105,7 @@ où $\lambda$ est appelé terme de régularité et permet de modifier l'importan
 
 Il est également possible de modéliser le problème sous la forme d'un graphe $\G$. Ce graphe contient l'ensemble des points à classifier représentés sous la forme de ses sommets auxquels on ajoute 2 sommets particuliers généralement notés $s$ (pour \textit{source}) et $t$ (pour \textit{target}). Les points sont tous reliés par des arêtes à $s$ et $t$ qui représentent les 2 \textit{labels} de classification du problème. Par ailleurs, on relie les points entre eux lorsque l'affectation de l'un est fonction de l'affectation de l'autre.\\
 On obtient alors un graphe de la forme : 
-\begin{figure}
+\begin{figure}[!h]
 	\begin{center}
 		\includegraphics[width=0.8\textwidth]{Images/GC/graphcut.png} 
 	\end{center}
@@ -131,14 +131,14 @@ On cherche donc à se ramener au problème de calcul de coupe minimale en affect
 On rend alors équivalents la minimisation de l'énergie $E_{TOTAL}$ et la recherche de la coupe minimale de $\G$.\\
 Le calcul de la coupe minimale du graphe $\G$ ainsi construit permet de minimiser l'énergie et donc de résoudre le problème de classification.
 
-\subsection{Application dans le cadre de la détection de TODO}
+\subsection{Application dans le cadre de la détection des nodules}
 
 Pour appliquer des méthodes de coupes de graph au sujet qui nous intéresse, il s'agit alors de définir les fonctions d'attaches aux données et de régularisation d'une part et de construire un graphe $\G$ représentatif du problème d'autre part.
 
 \subsubsection{Construction du graphe}
 
 A chaque voxel de l'image on associe un sommet $p$ du graphe. On ajoute également $s_{IN}$ pour le label \textit{interieur} et $s_{OUT}$ pour le label \textit{exterieur}. Les sommets étant définis, il s'agit alors de les relier entre eux avec des arêtes correspondants à la réalité du problème.\\
-On relie donc chaque sommets $p$ à $s_{IN}$ et $s_{OUT}$. En remarquant par ailleurs que la complexité de la minimalisation de la coupe dépend du nombre d'arêtes dans le graphe, on se contente d'appliquer un modèle de 6-connexité pour les arêtes reliant 2 sommets $p$ voisins. C'est à dire que l'affectation chaque voxel ne dépend que de l'affectation de ses 6 voisins les plus proches, comme le montre la figure \textit{TODO !!!}
+On relie donc chaque sommets $p$ à $s_{IN}$ et $s_{OUT}$. En remarquant par ailleurs que la complexité de la minimalisation de la coupe dépend du nombre d'arêtes dans le graphe, on se contente d'appliquer un modèle de 6-connexité pour les arêtes reliant 2 sommets $p$ voisins. C'est à dire que l'affectation chaque voxel ne dépend que de l'affectation de ses 6 voisins les plus proches (2 selon chacun des 3 axes).
 
 \subsubsection{Energies}
 
@@ -167,6 +167,17 @@ Les fonctions utilisées peuvent être quelconques à partir du moment où elles
 \forall i, j \{VOXEL\}, \ \ \forall l_1, l_2 \in \{LABEL\}\ \  E(i\rightarrow l_1, j\rightarrow l_1) + E(i\rightarrow l_2, j\rightarrow l_2) \leq E(i\rightarrow l_1, j\rightarrow l_2) + E(i\rightarrow l_2, j\rightarrow l_1)
 \end{equation*}
 Cette condition est évidemment vérifiée dans le cas précédent puisque l'égalité des labels entraine la nullité du terme de régularité et que les autres termes sont positifs ou nuls.
+
+\section{Tests de segmentation}
+
+Pour vérifier l'efficacité de la partie segmentation, nous l'avons sur des données théoriques:
+\begin{itemize}
+	\item[$\bullet$] un ellipsoïde défini par avance par son centre, ses axes et ses rayons
+	\item[$\bullet$] une image représentant un ellipsoide d'une certaine couleur sur un fond d'une autre couleur
+	\item[$\bullet$] la loi de probabilité correspondant à la segmentation effectuée dans la première partie
+\end{itemize} 
+Les images ont été bruitée plus ou moins fortement pour tester la robustesse de la segmentation face à des données pas totalement fiables.
+\textit{TODO}
 
 \bibliographystyle{plain} %Style of Bibliography: plain / apalike / amsalpha / ...
 \bibliography{literature} %You need a file 'literature.bib' for this.
