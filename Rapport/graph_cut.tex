@@ -97,7 +97,7 @@ Ce problème de classification peut s'écrire sous la forme d'une minimisation d
 \end{itemize}
 L'énergie s'écrit alors sous la forme:
 \[
-	E_{TOTAL} = \sum_{\lab \in \{s,t\}} \sum_{p \in \mathcal{G}} E_{DATA}(\lab, p) + \lambda \sum _{p,q \in \mathcal{G} \text{ voisins}} E_{SMOOTH}(p,q)
+	E_{TOTAL} = \sum_{p \in \mathcal{G}} E_{DATA}(\lab(p), p) + \lambda \sum _{p,q \in \mathcal{G} \text{ voisins}} E_{SMOOTH}(p,q)
 \]
 où $\lambda$ est appelé terme de régularité et permet de modifier l'importance du rapport attache-aux-données/régularité.\\
 
@@ -160,13 +160,18 @@ L'énergie de régularisation est nulle lorsque les labels des 2 voxels voisins 
 En suivant les conseils de \cite{bib:seg}, nous avons utilisé les énergies suivantes:
 \begin{itemize}
 	\item[$\bullet$] pour la différence d'intensité: $E_{SMOOTH 1} \varpropto e^{-\frac{\Delta I^2}{2\sigma^2}}$ où $\Delta I$ est l'écart d'intensité et $\sigma$ est le paramètre de pénalisation.
-	\item[$\bullet$] pour la localisation du barycentre: $E_{SMOOTH 2} \varpropto  \frac{d^2}{2\sigma^2}$ où $d$ est la distance du barycentre à la frontière.
+	\item[$\bullet$] pour la localisation du barycentre: $E_{SMOOTH 2} \varpropto  \frac{d^2}{\sigma^2}$ où $d$ est la distance du barycentre à la frontière.
 \end{itemize}
 Les fonctions utilisées peuvent être quelconques à partir du moment où elles vérifient la condition de \textbf{régularité}:
 \begin{equation*}
 \forall i, j \{VOXEL\}, \ \ \forall l_1, l_2 \in \{LABEL\}\ \  E(i\rightarrow l_1, j\rightarrow l_1) + E(i\rightarrow l_2, j\rightarrow l_2) \leq E(i\rightarrow l_1, j\rightarrow l_2) + E(i\rightarrow l_2, j\rightarrow l_1)
 \end{equation*}
-Cette condition est évidemment vérifiée dans le cas précédent puisque l'égalité des labels entraine la nullité du terme de régularité et que les autres termes sont positifs ou nuls.
+Cette condition est évidemment vérifiée dans le cas précédent puisque l'égalité des labels entraine la nullité du terme de régularité et que les autres termes sont positifs ou nuls.\\
+On obtient finalement une énergie de la forme:
+\[
+	E_{TOTAL} = \sum_{p \in \mathcal{G}} (1-\lambda)\mathbb{P}(p \in \lab(p))^2 + \lambda \sum _{p,q \in \mathcal{G} \text{ voisins}} \delta_{\lab(p) = \lab(q)} \left[ \lambda \frac{d\left(\frac{p+q}{2}, \epsilon \right)}{\sigma_d}^2 + (1-\lambda) e^{-\frac{\Delta I^2}{2\sigma_c^2}} \right]
+\]
+où $\delta$ est le symbole de Kronecker, $d\left(\frac{p+q}{2}, \epsilon \right)$ est la distance du barycentre de $p$ et $q$ à la frontière de l'ellipsoide $\epsilon$ et $\Delta I$ est la différence d'intensité entre $p$ et $q$. Les valeurs de $\sigma_d$ et $\sigma_c$ ont été fixées à 5 pixels et 3 d'intensité. Elles sont cependant changeables et une étude plus approfondies, réalisée à l'aide de données sur les variations d'intensité des images médicales et la taille moyenne des nodules permettrait de leur affecter une valeur plus raisonnable.
 
 \section{Tests de segmentation}
 
@@ -176,8 +181,62 @@ Pour vérifier l'efficacité de la partie segmentation, nous l'avons sur des don
 	\item[$\bullet$] une image représentant un ellipsoide d'une certaine couleur sur un fond d'une autre couleur
 	\item[$\bullet$] la loi de probabilité correspondant à la segmentation effectuée dans la première partie
 \end{itemize} 
-Les images ont été bruitée plus ou moins fortement pour tester la robustesse de la segmentation face à des données pas totalement fiables.
-\textit{TODO}
+L'image et la loi de répartition ont été bruitées plus ou moins fortement pour tester la robustesse de la segmentation face à des données pas totalement fiables.\\
+Les résultats suivants sont présentés sous forme de tableaux et indiquent le pourcentage de voxels mal segmentés en fonction du paramètre de régularité $\lambda$ choisi.
+
+\begin{table}[h!]
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
+		\hline
+		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 5.9 & $\infty$\\
+		\hline
+\end{tabular}
+\end{center}
+\caption{Résultats en l'absence de bruit.}
+\end{table}
+
+\begin{table}[h!]
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
+		\hline
+		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 5.9 & $\infty$\\
+		\hline
+\end{tabular}
+\end{center}
+\caption{Résultats en bruitant la loi de répartition uniquement.}
+\end{table}
+
+\begin{table}[h!]
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
+		\hline
+		$\epsilon$ (\%) & 3.4 & 3.4 & 3.3 & 3.3 & 2.9 & 3.1 & 3.6 & 12.1 & 32.8 & 56.9 & $\infty$\\
+		\hline
+\end{tabular}
+\end{center}
+\caption{Résultats en bruitant l'image à segmenter uniquement.}
+\end{table}
+
+\begin{table}[h!]
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
+		\hline
+		$\epsilon$ (\%) & $\infty$ & 40.6 & 29.2 & 24.1 & 22.5 & 19.9 & 20.4 & 24.4 & 35 & 61.3 & $\infty$\\
+		\hline
+\end{tabular}
+\end{center}
+\caption{Résultats en bruitant l'image à segmenter et la loi de répartition.}
+\end{table}
+
+Les résultats montrent ainsi une tendance à choisir un coefficient de régularité proche de 0.5 évitant ainsi les cas extrêmes ou aucune régularité/trop de régularité sont appliquées.
 
 \bibliographystyle{plain} %Style of Bibliography: plain / apalike / amsalpha / ...
 \bibliography{literature} %You need a file 'literature.bib' for this.

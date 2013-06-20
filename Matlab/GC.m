@@ -21,13 +21,13 @@ if generated_input
     R = [12.1924    6.8147    5.4075];
     % law inside and outside
 	m = [0.7 0.3];
-	sigma = [0 0];
+	sigma = [0.3 0.3];
 
 	% generate proba_ellipsoid
 	ellipsoid = generate_ellipsoid(s, c, X, R, m, sigma);
     
     m_color = [45 123];
-    sigma_color = [45 60];
+    sigma_color = [0 0];
     
     % generate color_ellipsoid
 	I = generate_ellipsoid(s, c, X, R, m_color, sigma_color);
@@ -54,7 +54,7 @@ mex GC/GC.cpp
 for lambda = 0:0.1:1
 
 % execute mex file
-[label_map] = GC(I, ellipsoid, [c' X' R'], 0.5);
+[label_map] = GC(I, ellipsoid, [c' X' R'], lambda);
 
 l0 = label(label_map, 0);
 hold on;
