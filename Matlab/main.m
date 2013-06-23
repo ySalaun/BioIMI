@@ -63,23 +63,6 @@ for p=1:size(Z,3)
     Zm(:,:,p)=Z(:,:,p).*Masq;
 end
 
-%imagesc(squeeze(Zm(:,30,:))); % permet de voir la tranche etudie par l'acp et HT
-
-X1=squeeze(X(:,:,1,1));
-Z1=squeeze(Z(:,31,:));
-
-imagesc(Z1);
-
-% affichage : le deuxieme parametre vaut 1 quand on egalise le contraste
-if display_on
-    display_scans(Z,1);
-    display_scans(X,0);
-    figure;
-    imshow(Z1);
-    figure;
-    imshow(Masq);
-end
-
 % Comparaison
 % apparement ça ne marche pas, faut vérifier entre autre l'orientation des
 % axes. Et je ne suis pas très sur de la définition de ImagePositionPatient
@@ -94,10 +77,7 @@ Xin_contours=fill_contour(contours,size(X));
 Y_orig=squeeze(X(280+3:340-3,350+3:410-3,1,4:end-3));
 Y_RT=Xin_contours(280+3:340-3,350+3:410-3,4:end-3);
 Y_proba=Z;
-
-size(Y_orig)
-size(Y_RT)
-size(Y_proba)
+Y_proba_denoised=Zm;
 
 imshow(imadjust(Y_orig(:,:,10)));
 figure;
@@ -108,17 +88,24 @@ imshow(Y_proba(:,:,10));
 %% Calcul des parametres, ATTENTION probleme si l'ellipsoide a un rayon de 1
 
 [ct,Xt,Rt] = parametres(Zm, seuil) % Parametres approches par la PCA
+R=Rt;
+c=ct;
+Vec=Xt;
 
-[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt,seuil) % Precision avec hough transform
+%[c, R, Vec] = Hough_transform(Z,ct,Rt,Xt,seuil) % Precision avec hough transform
+
+
 
 %affichage pour cet exemple en particulier de l'ellipse 
-colormap('gray');
 vtheta = 0:0.01:3.14*2;
 Xcenter=ct(1) + R(2)*cos(vtheta);
 Ycenter=ct(2) + R(3)*sin(vtheta);
-plot(Ycenter, Xcenter)
 
-hold off
+hold on;
+colormap('gray');
+imagesc(imadjust(Y_orig(:,:,10)));
+plot(Ycenter, Xcenter);
+hold off;
 
 %% GRAPH CUT
 
@@ -126,49 +113,51 @@ hold off
 mex GC/GC.cpp
 
 % parameters for cropped picture
-X1 = 280; X2 = 340;
-Y1 = 350; Y2 = 410;
-Z1 = 1; Z2 =  size(X,4);
-I = zeros(X2-X1-3, Y2-Y1-3, Z2-Z1-3);
-for x = X1+2:X2-2
-    for y = Y1+2:Y2-2
-        for z = Z1+2:Z2-2
-            I(x-X1-1, y-Y1-1, z-Z1-1) = X(x, y, 1, z);
-        end
-    end
-end
+siz=size(Y_orig);
+Zm=Y_proba_denoised;
+Ztest = Zm/max(max(max(Zm))); % min(2*(Zm>0.3).*Zm,1) + Zm;
+
+% execute mex file, final ellipsoide
+[label_map] = GC(double(I), double(Ztest), [c' Vec' R'], 0.5);
+l0 = label(label_map, 0);
+
+
+%% DISPLAY RESULTS
+
+% Draw images
+imshow(imadjust(Y_orig(:,:,10)));
+figure;
+imshow(Y_RT(:,:,10));
+figure;
+imshow(Y_proba(:,:,10));
+
 
 % draw PCA ellipsoid
-PCA_ellipsoid = generate_ellipsoid(size(I), c, Vec, R, [1 0], [0 0]);
+PCA_ellipsoid = generate_ellipsoid(siz, c, Vec, R, [1 0], [0 0]);
 M = Is_in (PCA_ellipsoid, 0.5);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
 % draw proba ellipsoid
-M = Is_in (Z, 0.5);
+M = Is_in (Y_proba, 0.5);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
 % draw denoised proba ellipsoid
-M = Is_in (Zm, 0.3);
+M = Is_in (Y_proba_denoised, 0.3);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
 % draw test proba ellipsoid
-Ztest = Zm/max(max(max(Zm))); min(2*(Zm>0.3).*Zm,1) + Zm;
 M = Is_in (Ztest, 0.5);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
-% execute mex file
-[label_map] = GC(double(I), double(Ztest), [c' Vec' R'], 0.5);
-
 % display final ellipsoid
-l0 = label(label_map, 0);
 hold on;
 scatter3(l0(:,1),l0(:,2),l0(:,3));
 hold off;
