@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 12-Jun-2013 23:01:26
+% Last Modified by GUIDE v2.5 22-Jun-2013 18:53:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -97,9 +97,9 @@ if ~(isequal(FileName,0) || isequal(PathName,0)) % si on n'a pas annuler
     handles.nimages=length(FileName);
     handles.currentimage=1;
     handles.rt_info=0;
-
-    Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
-    gui_refresh(Y1,handles.info(handles.currentimage),handles.rt_info);
+    siz=size(handles.Y);
+    handles.rect=[1 1 siz(1) siz(2)];
+    gui_refresh(handles);
       
     guidata(hObject,handles);
 end
@@ -111,19 +111,20 @@ function pushbutton2_Callback(hObject, eventdata, handles) % Movie
 
 % --- Executes on button press in pushbutton3.
 function pushbutton3_Callback(hObject, eventdata, handles) % Selection
-	[~,rect]=imcrop;
-	handles.rect=[handles.currentimage rect];
+    [~,rect]=imcrop(handles.axes1);
+	handles.rect=round([rect(2) rect(1) rect(4) rect(3)]);
+    gui_refresh(handles);
 	guidata(hObject,handles);
+    
 
 
 % --- Executes on button press in pushbutton4.
 function pushbutton4_Callback(hObject, eventdata, handles) % Next
-    handles.currentimage=mod(handles.currentimage,handles.nimages)+1;
-    Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
-    set(handles.text1,'String',handles.FileName{1,handles.currentimage});
 
-    gui_refresh(Y1,handles.info(handles.currentimage),handles.rt_info);
-        
+    handles.currentimage=mod(handles.currentimage,handles.nimages)+1;
+    set(handles.text1,'String',handles.FileName{1,handles.currentimage});
+    gui_refresh(handles);
+      
     guidata(hObject,handles);
 
 
@@ -131,9 +132,8 @@ function pushbutton4_Callback(hObject, eventdata, handles) % Next
 function pushbutton5_Callback(hObject, eventdata, handles) %Expert
   [FileName,PathName] = uigetfile('*.dcm','MultiSelect','off','Selectionnez l''image');
   handles.rt_info=dicominfo(strcat(PathName,FileName));
-  Y1=imadjust(squeeze(handles.Y(:,:,1,handles.currentimage)));
-
-  gui_refresh(Y1,handles.info(handles.currentimage),handles.rt_info);
+  gui_refresh(handles);
+    
 
   guidata(hObject,handles);
 
@@ -154,29 +154,13 @@ vpar_gabor=[5 1 1 1; % paramètres des filtres de gabor
         1.5 0 1 0;
         1 1 0 0]; 
 
-
-siz=size(handles.Y);    
-
-z=handles.rect(1);
-zweight=max(handles.rect(4:5));
-zm=max(1,     floor(z-zweight));
-zM=min(siz(4),floor(z+zweight));
-
-xmin=handles.rect(2);
-xm=floor(xmin);
-xM=floor(xmin+handles.rect(4));
-
-ymin=handles.rect(3);
-ym=floor(ymin);
-yM=floor(ymin+handles.rect(5));
-
-X=handles.Y(ym:yM,xm:xM,1,zm:zM);
+r=handles.rect;
+X=handles.Y(r(1):r(1)+r(3)-1,r(2):r(2)+r(4)-1,:);
 
 Yg=convolution_gabor(X,vpar_gabor);
 Z=classification_acp(Yg);
+
 Zmasque=Masque(Z);
-
-
-
-
-
+for p=1:size(Z,3)
+    Zm(:,:,p)=Z(:,:,p).*Masq;
+end

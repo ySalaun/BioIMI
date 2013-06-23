@@ -1,6 +1,15 @@
-function gui_refresh(Y1,dcm_info,rt_info)
+function gui_refresh(handles)
   % refait l'affichage
-
+        
+  Y=handles.Y;
+  r=handles.rect;
+  idx_image=handles.currentimage;
+  dcm_info=handles.info(idx_image);
+  rt_info=handles.rt_info;
+  
+  Y1 =imadjust(squeeze( Y(:,:,1,idx_image)));
+  Ys1=Y1(r(1):r(1)+r(3)-1,r(2):r(2)+r(4)-1,:);
+  axes(handles.axes1);
   if (isequal(rt_info,0))
     imagesc(Y1);
     colormap('gray');
@@ -10,10 +19,24 @@ function gui_refresh(Y1,dcm_info,rt_info)
       imagesc(Y1);
       colormap('gray');
       axis image;
-      contoursY1=add_RT(dcm_info,rt_info);
-      display_RT(Y1,contoursY1);
+      contoursY1=add_RT(handles.info(idx_image),handles.rt_info);
+      display_RT(contoursY1);
       hold off;
-    end
+  end
 
+  axes(handles.axes2);
+   if (isequal(rt_info,0))
+    imagesc(Ys1);
+    colormap('gray');
+    axis image;
+  else
+      hold on;
+      imagesc(Ys1);
+      colormap('gray');
+      axis image;
+      contoursYs1=add_RT(handles.info(idx_image),handles.rt_info,r(2)-1,r(1)-1,0);
+      display_RT(contoursYs1);
+      hold off;
+  end
 
 end

@@ -1,10 +1,14 @@
-function [contours]=add_RT(dcm_info,rt_info)
+function [contours]=add_RT(dcm_info,rt_info,xo,yo,zo)
 % dcm_info,rt_info : informations sur les images (dicominfo)
 % renvoie la position (en voxel) des contours dans l'image associé à dcm_info
 %           sous forme de cell.
 
 % récupère des informations sur les images 
-
+if nargin < 5
+    xo=0;
+    yo=0;
+    zo=0;
+end
 ImagePosition=dcm_info.ImagePositionPatient;
 SliceThickness=dcm_info.SliceThickness;
 PixelSpacing=dcm_info.PixelSpacing;
@@ -35,9 +39,9 @@ for in=1:Ln
     for ic=1:Lc
         CD=NoduleData.(fields{ic}).ContourData;
         % Création des vecteurs de coordonnées : x, y
-        x=(CD(1:3:end)-ImagePosition(1))/PixelSpacing;
-        y=(CD(2:3:end)-ImagePosition(2))/PixelSpacing;
-        z=(CD(3:3:end)-ImagePosition(3))/SliceThickness;
+        x=((CD(1:3:end)-ImagePosition(1))/PixelSpacing)-xo+1;
+        y=((CD(2:3:end)-ImagePosition(2))/PixelSpacing)-yo+1;
+        z=((CD(3:3:end)-ImagePosition(3))/SliceThickness)-zo+1;
                     
         contours{in}{ic}= [x y z];
     end

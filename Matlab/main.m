@@ -27,12 +27,12 @@ display_on = 0;
 
 
 %% Yohann
-addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
-path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
+%addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
+%path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
 
 %% Raphael
-% addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
-% path_dcm='/home/raphal/Documents/2A/Projet_IMI/DB/017 BA - 000112377//';
+addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
+path_dcm='/home/raphal/Documents/2A/Projet_IMI/DB/017 BA - 000112377//';
 
 path_scan='CT - 20121226 - Studydescription/1/';
 pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
@@ -54,7 +54,6 @@ Yg=convolution_gabor(X(280:340,350:410,:),vpar_gabor);
 % classement par ACP
 % Z est donc la matrice 3D de proba qui vous intéresse
 Z=classification_acp(Yg);
-TestSize=size(Z)
 
 Masq=Masque(Z);
 
@@ -88,10 +87,23 @@ end
 rt=dicominfo(strcat(path_dcm,pathrt));
 [contours]=add_RT(info,rt);
 
-hold on
-if display_on
-    display_RT(X,contours);
-end
+Xin_contours=fill_contour(contours,size(X));
+
+
+%% Resultats premiere partie
+Y_orig=squeeze(X(280+3:340-3,350+3:410-3,1,4:end-3));
+Y_RT=Xin_contours(280+3:340-3,350+3:410-3,4:end-3);
+Y_proba=Z;
+
+size(Y_orig)
+size(Y_RT)
+size(Y_proba)
+
+imshow(imadjust(Y_orig(:,:,10)));
+figure;
+imshow(Y_RT(:,:,10));
+figure;
+imshow(Y_proba(:,:,10));
 
 %% Calcul des parametres, ATTENTION probleme si l'ellipsoide a un rayon de 1
 
