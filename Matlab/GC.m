@@ -67,6 +67,6 @@ scatter3(l0(:,1),l0(:,2),l0(:,3));
 hold off;
 
 lambda
-ratio = sum(sum(sum(l0>0.5)))/sum(sum(sum(true_ellipsoid)))*100
+ratio = sum(sum(sum(l0==1)))/sum(sum(sum(true_ellipsoid)))*100
 
 end

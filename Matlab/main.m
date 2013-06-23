@@ -27,12 +27,12 @@ display_on = 0;
 
 
 %% Yohann
-%addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
-%path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
+addpath(genpath('C:/Users/Yohann/Documents/GitHub/BioIMI/Matlab'));
+path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
 
 %% Raphael
-addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
-path_dcm='/home/raphal/Documents/2A/Projet_IMI/DB/017 BA - 000112377//';
+% addpath(genpath('/home/raphal/Documents/2A/Projet_IMI/BioIMI/Matlab'));
+% path_dcm='/home/raphal/Documents/2A/Projet_IMI/DB/017 BA - 000112377//';
 
 path_scan='CT - 20121226 - Studydescription/1/';
 pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
@@ -74,8 +74,8 @@ Xin_contours=fill_contour(contours,size(X));
 
 
 %% Resultats premiere partie
-Y_orig=squeeze(X(280+3:340-3,350+3:410-3,1,4:end-3));
-Y_RT=Xin_contours(280+3:340-3,350+3:410-3,4:end-3);
+Y_orig=squeeze(X(280+2:340-2,350+2:410-2,1,3:end-2));
+Y_RT=Xin_contours(280+2:340-2,350+2:410-2,3:end-2);
 Y_proba=Z;
 Y_proba_denoised=Zm;
 
@@ -112,13 +112,11 @@ hold off;
 % compile cpp file
 mex GC/GC.cpp
 
-% parameters for cropped picture
-siz=size(Y_orig);
-Zm=Y_proba_denoised;
-Ztest = Zm/max(max(max(Zm))); % min(2*(Zm>0.3).*Zm,1) + Zm;
+% enhance probability map
+Y_proba_enhanced = Y_proba_denoised/max(max(max(Y_proba_denoised)));
 
 % execute mex file, final ellipsoide
-[label_map] = GC(double(I), double(Ztest), [c' Vec' R'], 0.5);
+[label_map] = GC(double(Y_orig), double(Y_proba_enhanced), [c' Vec' R'], 0.5);
 l0 = label(label_map, 0);
 
 
@@ -131,28 +129,36 @@ imshow(Y_RT(:,:,10));
 figure;
 imshow(Y_proba(:,:,10));
 
+if(debug)
+    % draw PCA ellipsoid
+    siz=size(Y_orig);
+    PCA_ellipsoid = generate_ellipsoid(siz, c, Vec, R, [1 0], [0 0]);
+    M = Is_in (PCA_ellipsoid, 0.5);
+    hold on;
+    scatter3(M(:,1),M(:,2),M(:,3));
+    hold off;
 
-% draw PCA ellipsoid
-PCA_ellipsoid = generate_ellipsoid(siz, c, Vec, R, [1 0], [0 0]);
-M = Is_in (PCA_ellipsoid, 0.5);
-hold on;
-scatter3(M(:,1),M(:,2),M(:,3));
-hold off;
+    % draw proba ellipsoid
+    M = Is_in (Y_proba, 0.5);
+    hold on;
+    scatter3(M(:,1),M(:,2),M(:,3));
+    hold off;
 
-% draw proba ellipsoid
-M = Is_in (Y_proba, 0.5);
-hold on;
-scatter3(M(:,1),M(:,2),M(:,3));
-hold off;
+    % draw denoised proba ellipsoid
+    M = Is_in (Y_proba_denoised, 0.3);
+    hold on;
+    scatter3(M(:,1),M(:,2),M(:,3));
+    hold off;
 
-% draw denoised proba ellipsoid
-M = Is_in (Y_proba_denoised, 0.3);
-hold on;
-scatter3(M(:,1),M(:,2),M(:,3));
-hold off;
+    % draw test proba ellipsoid
+    M = Is_in (Y_proba_enhanced, 0.5);
+    hold on;
+    scatter3(M(:,1),M(:,2),M(:,3));
+    hold off;
+end
 
-% draw test proba ellipsoid
-M = Is_in (Ztest, 0.5);
+% draw expert segmentation
+M = Is_in (Y_RT, 0.5);
 hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
@@ -161,4 +167,6 @@ hold off;
 hold on;
 scatter3(l0(:,1),l0(:,2),l0(:,3));
 hold off;
+
+
 
