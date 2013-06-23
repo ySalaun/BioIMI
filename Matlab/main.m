@@ -117,7 +117,7 @@ Y_proba_enhanced = Y_proba_denoised/max(max(max(Y_proba_denoised)));
 
 % execute mex file, final ellipsoide
 [label_map] = GC(double(Y_orig), double(Y_proba_enhanced), [c' Vec' R'], 0.5);
-l0 = label(label_map, 0);
+nodule = label(label_map, 0);
 
 
 %% DISPLAY RESULTS
@@ -128,6 +128,8 @@ figure;
 imshow(Y_RT(:,:,10));
 figure;
 imshow(Y_proba(:,:,10));
+
+debug = 0;
 
 if(debug)
     % draw PCA ellipsoid
@@ -163,10 +165,17 @@ hold on;
 scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
-% display final ellipsoid
+% display final nodule
+M = Is_in (nodule, 0.5);
 hold on;
-scatter3(l0(:,1),l0(:,2),l0(:,3));
+scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
+% draw difference between the two segmentations
+diff = diffMaps(nodule, 1, Y_RT, 0.5);
+M = Is_in (diff, 0.5);
+hold on;
+scatter3(M(:,1),M(:,2),M(:,3));
+hold off;
 
-
+ratio = sum(sum(sum(diff==1)))/sum(sum(sum(Y_RT)))*100

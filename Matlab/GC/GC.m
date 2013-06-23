@@ -57,16 +57,18 @@ for lambda = 0:0.1:1
 [label_map] = GC(I, ellipsoid, [c' X' R'], lambda);
 
 l0 = label(label_map, 0);
+M = Is_in (l0, 0.5);
 hold on;
-scatter3(l0(:,1),l0(:,2),l0(:,3));
+scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
-l0 = diffMaps(label_map, 0, true_ellipsoid, 0.5);
+diff = diffMaps(label_map, 0, true_ellipsoid, 0.5);
+M = Is_in (l0, 0.5);
 hold on;
-scatter3(l0(:,1),l0(:,2),l0(:,3));
+scatter3(M(:,1),M(:,2),M(:,3));
 hold off;
 
 lambda
-ratio = sum(sum(sum(l0==1)))/sum(sum(sum(true_ellipsoid)))*100
+ratio = sum(sum(sum(diff==1)))/sum(sum(sum(true_ellipsoid)))*100
 
 end
