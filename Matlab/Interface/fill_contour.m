@@ -36,7 +36,6 @@ if (n>1)
     disp(n, ' nodules')
     return;
 end
-disp('nodule trouve, debut croissance de region')
 NoduleData=contours{idx};
 
 Lc=length(NoduleData);
@@ -46,5 +45,5 @@ for ic=1:Lc
     X(:,:,z)=poly2mask(v(:,1),v(:,2),siz(1),siz(2));
 end
 
-
+disp('nodule trouve, croissance de region effectuee')
 end

@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 22-Jun-2013 18:53:20
+% Last Modified by GUIDE v2.5 24-Jun-2013 01:46:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -115,12 +115,10 @@ function pushbutton3_Callback(hObject, eventdata, handles) % Selection
 	handles.rect=round([rect(2) rect(1) rect(4) rect(3)]);
     gui_refresh(handles);
 	guidata(hObject,handles);
-    
 
 
 % --- Executes on button press in pushbutton4.
 function pushbutton4_Callback(hObject, eventdata, handles) % Next
-
     handles.currentimage=mod(handles.currentimage,handles.nimages)+1;
     set(handles.text1,'String',handles.FileName{1,handles.currentimage});
     gui_refresh(handles);
@@ -129,12 +127,11 @@ function pushbutton4_Callback(hObject, eventdata, handles) % Next
 
 
 % --- Executes on button press in pushbutton5.
-function pushbutton5_Callback(hObject, eventdata, handles) %Expert
+function pushbutton5_Callback(hObject, eventdata, handles) % Expert
   [FileName,PathName] = uigetfile('*.dcm','MultiSelect','off','Selectionnez l''image');
   handles.rt_info=dicominfo(strcat(PathName,FileName));
   gui_refresh(handles);
     
-
   guidata(hObject,handles);
 
   
@@ -146,21 +143,27 @@ function pushbutton6_Callback(hObject, eventdata, handles) % Main
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% parametres
-lambda = 0.5;                               % smoothness coefficient
-vpar_gabor=[5 1 1 1; % paramètres des filtres de gabor
-        20 1 2 1;    % a,b,c,sigma : "cos(ax+by+cz)exp(-x^2/sigma^2)"
-        1.5 0 1 0;
-        1 1 0 0]; 
+global Y_RT;
+global Y_GC;
+global Y_proba;
+global Y_orig;
 
 r=handles.rect;
 X=handles.Y(r(1):r(1)+r(3)-1,r(2):r(2)+r(4)-1,:);
+[Y_orig,Y_RT,Y_proba,Y_proba_denoised,Y_GC]=main_function(handles.Y,handles.rect,handles.info,handles.rt_info);
 
-Yg=convolution_gabor(X,vpar_gabor);
-Z=classification_acp(Yg);
+guidata(hObject,handles);
 
-Zmasque=Masque(Z);
-for p=1:size(Z,3)
-    Zm(:,:,p)=Z(:,:,p).*Masq;
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if isequal(get(hObject,'waitstatus'),'waiting')
+    uiresume(hObject);
+else
+% Hint: delete(hObject) closes the figure
+delete(hObject);
 end

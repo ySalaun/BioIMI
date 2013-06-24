@@ -1,29 +1,20 @@
-function display_RT(X,contours)
-% affiche la premiere tranche de X
+function display_RT(contours)
+% affiche les contours correspondants à z==0
 % attention il faut que les infos ayant permis de générer contours
 % correspondent
-Y1=squeeze(X(:,:,1,1));
-figure;
-hold on;
-imagesc(Y1);
-colormap('gray');
-axis image;
 
 % boucle sur les nodules
 Ln=length(contours);
 for in=1:Ln
     NoduleData=contours{in};   
     % boucle sur les différents contour d'un nodule
-    Lc=NoduleData;
+    Lc=length(NoduleData);
     for ic=1:Lc
-        [x y z]=NoduleData{ic};              
-        if (abs(z(1))<2)
-            disp(z(1));
-            plot(x,y);
+        v=NoduleData{ic}; % coord x,y,z des points du contours en colonne
+        if (abs(v(1,3))<0.6)
+            plot(v(:,1),v(:,2));
         end;
     end
 end
-
-hold off;
 
 end
