@@ -1,24 +1,23 @@
-function [ c, X, R ] = parametres( E, seuil )
+function [ c, X, R ] = parametres( E, threshold )
 %Compute all the arguments of the ellipso�de :
 %   - R^3 vector c:     center of the ellipsoid (line)
 %   - M_{3x3} matrix X: the lines are directions of the ellipsoid
 %   - R^3 vector R:     rays of the ellipsoid (line)
 
 %Compute the voxel in the nodule
-M=Is_in ( E, seuil );
+M=Is_in ( E, threshold );
 m=size(M,1);
 
 % Compute the parameters c and X
 [Vect, Val, Mean]= pca ( M, 3 );
 
-%Val= sqrt(Val)
+Val= sqrt(Val);
 
 c=Mean;
 
 X=Vect';
 
 % Compute the rays using : Volume=4/3*Pi*a*b*c= m 
-
 R=zeros(3,1);
 
 R(1,1)=nthroot(3.*m/(4*pi)*Val(1)/Val(3)*Val(1)/Val(2),3);

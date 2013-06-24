@@ -7,7 +7,7 @@ for i=Int1
         for k=Int3
             % voxel coordinates
             voxel = [i j k];
-            % compute the efficacity of the model
+            % compute the efficiency of the model
             d = 0;
             for l=1:3
                 d = d + (sum( (voxel-c).*X(l,:) )/R(l) )^2;
