@@ -147,10 +147,15 @@ global Y_RT;
 global Y_GC;
 global Y_proba;
 global Y_orig;
+global Y_proba_denoised;
+global Y_GC;
+global c;
+global Vec;
+global R;
 
 r=handles.rect;
 X=handles.Y(r(1):r(1)+r(3)-1,r(2):r(2)+r(4)-1,:);
-[Y_orig,Y_RT,Y_proba,Y_proba_denoised,Y_GC]=main_function(handles.Y,handles.rect,handles.info,handles.rt_info);
+[Y_orig,Y_RT,Y_proba,Y_proba_denoised,Y_GC,c,Vec,R]=main_function(handles.Y,handles.rect,handles.info,handles.rt_info);
 
 guidata(hObject,handles);
 

@@ -21,9 +21,8 @@ path_dcm='C:/Users/Yohann/Documents/GitHub/BioIMI_Data/017 BA - 000112377//';
 
 %% DISPLAY PART
 
-% sans interface graphique (pour l'interface GUI;)
 
-% affichage graphiques
+% displaying modes
 gui_on = 0;
 display_on = 0;
 
@@ -31,31 +30,35 @@ if gui_on
     global Y_RT;
     global Y_GC;
     global Y_orig;
-    global Y_proba; 
+    global Y_proba;
+    global Y_proba_denoised;
+    global c;
+    global Vec;
+    global R;
+    
     GUI;
 else
-% ajoute les différents dossier du projet :
-path_scan='CT - 20121226 - Studydescription/1/';
-pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
-
-% dossier de lecture des images
-% chargement des images de 480 à 500 (y a un nodule vers 495)
-[X,info]=read_dicom(140:1:170,strcat(path_dcm,path_scan));
-rt_info=dicominfo(strcat(path_dcm,pathrt));
-
-% Selection of a nodule area
-rect=[280 340 70 70];
-
-% Main algorithm
-[Y_orig,Y_RT,Y_proba,Y_proba_denoised,Y_GC]=main_function(X,rect,info,rt_info);
-
+    % add the corresponding path :
+    path_scan='CT - 20121226 - Studydescription/1/';
+    pathrt='RTSTRUCT - 20121226 - Studydescription/2/IM34463.dcm';
+    
+    % load images from 480 to 500 (there is a nodule around 495)
+    [X,info]=read_dicom(140:1:170,strcat(path_dcm,path_scan));
+    rt_info=dicominfo(strcat(path_dcm,pathrt));
+    
+    % Selection of a nodule area
+    rect=[280 340 70 70];
+    
+    % Main algorithm
+    [Y_orig,Y_RT,Y_proba,Y_proba_denoised,Y_GC,c,Vec,R]=main_function(X,rect,info,rt_info);
+    
 end
 %% RESULTS
 
-%affichage pour cet exemple en particulier de l'ellipse 
+% ellipsoid
 vtheta = 0:0.01:3.14*2;
-Xcenter=ct(1) + R(2)*cos(vtheta);
-Ycenter=ct(2) + R(3)*sin(vtheta);
+Xcenter=c(1) + R(2)*cos(vtheta);
+Ycenter=c(2) + R(3)*sin(vtheta);
 
 
 if(display_on)
@@ -66,13 +69,42 @@ if(display_on)
     hold off; 
     
     % Draw images
+    
+    slice=10;
     figure;
-    imshow(imadjust(Y_orig(:,:,10)));
-    figure;
-    imshow(Y_RT(:,:,10));
-    figure;
-    imshow(Y_proba(:,:,10));
+    
+    subplot(2,3,1);
+    imshow(imadjust(Y_orig(:,:,slice)));
+    title('Image originale');
+    
+    subplot(2,3,2);
+    imshow(Y_proba(:,:,slice));
+    title('Probabilites');
+    
+    subplot(2,3,3);
+    imshow(Y_proba_denoised(:,:,slice));
+    title('Filtrage grossier');
+    
+    subplot(2,3,4);
+    imshow(Y_GC(:,:,slice));
+    title('Segmentation finale');
+    
+    subplot(2,3,5);
+    imshow(Y_RT(:,:,slice));
+    title('Segmentation RT (expert)');
+    
+    subplot(2,3,6);
+    imshow(Y_GC(:,:,slice)==Y_RT(:,:,slice));
+    title('Erreur');
+    
+    
+    % error ratio between expert and this method
 
+    ratio=sum(sum(sum(Y_GC(:,:,slice)==Y_RT(:,:,slice))))/sum(sum(sum(Y_RT(:,:,slice))));
+    disp('The ratio between our result and expert one is : ',ratio);
+    
+    
+    
     % draw PCA ellipsoid
     siz=size(Y_orig);
     PCA_ellipsoid = generate_ellipsoid(siz, c, Vec, R, [1 0], [0 0]);
@@ -119,7 +151,3 @@ if(display_on)
     hold off;
 end
 
-% error ratio between expert and this method
-% the result is normalized with the expert nodule size
-ratio = sum(sum(sum(diff==1)))/sum(sum(sum(Y_RT)))*100;
-disp('The ratio between our result and expert one is : ',ration);

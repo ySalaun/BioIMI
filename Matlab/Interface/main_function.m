@@ -3,14 +3,19 @@ function [Y_orig,Y_RT,Y_proba,Y_proba_denoised,Y_gc,c,Vec,R]=main_function(X,rec
 %% PARAMETERS
 
 lambda = 0.5;        % smoothness coefficient
-vpar_gabor=[5 1 1 1; % paramètres des filtres de gabor
-        20 1 2 1;    % a,b,c,sigma : "cos(ax+by+cz)exp(-x^2/sigma^2)"
-        1.5 0 1 0;
-        1 1 0 0]; 
-
+% gabor filters parameters
+% sigma,a,b,c : "cos(ax+by+cz)exp(-x^2/sigma^2)"
+vpar_gabor=[
+        1 0 0 0;
+        2 0 0 0;
+        2 2 0 0;
+        2 0 2 0; 
+        2 0 0 2  ]; 
+%vpar_gabor=[5 1 1 1;20 1 2 1; 1.5 0 1 0;1 1 0 0]; 
+    
 sgabor= 3; % size of gabor kernel 
+seuil = 0.2; % threshold on image of probabilities
 
-seuil = 0.2; % seuil sur la matrice de proba
 %% PREPROCESSING
 
 % Selected image
