@@ -408,9 +408,20 @@ Les résultats montrent ainsi une tendance à choisir un coefficient de régular
 
 \subsection{Tests pratiques}
 
+La comparaison entre la segmentation réalisée par l'expert et la segmentation réalisée par notre algorithme est très décevante. En effet, même sans avoir testé l'algorithme sur l'ensemble de la base de donnée, les résultats sont déjà catastrophiques, atteignant même jusqu'à 70% d'erreur (normalisé par la taille du nodule de l'expert.\\
+Ces résultats peuvent s'expliquer entre autre par le fait que le nodule noté par l'expert diffère nettement d'un ellipsoide:
+\begin{figure}[!h]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{Images/Tests/forme_expert.png} 
+	\end{center}
+	\caption{Nodule délimité par l'expert}
+	\label{fig:expert_nodule}
+\end{figure}
+En conséquence, l'algorithme de graph cut devrait autoriser une plus grande liberté à la forme de la segmentation ( au risque d'enlever/ajouter de mauvais voxels). Pour cela, il faudrait alors changer les divers paramètres entrant en compte dans la partie graph cut. Cependant, leur nombre élevé rend l'optimisation de ces paramètres longue et laborieuse et n'a donc pas pu être réalisé pour notre projet.
+
 \section*{Conclusion}
 Finalement, chaque étape nous permet d'affiner la segmentation. L'application des filtres permet de segmenter de manière probabiliste les voxels de l'image, la détermination de l'ellispoïde utilise les caractéristiques de géométriques du nodule pour faire une segmentation globale, et la coupe de graphe permet de s'adapter au caractère granuleux de la surface.\\
- Cependant, cette détermination repose sur l'hypothèse que le nodule est de forme globalement ellipsoïdale ce qui n'est pas toujours le cas d'après les segmentations manuelles réalisées par le praticien. A ce moment l'algorithme n'est plus très efficace.\\
+Cependant, cette détermination repose sur l'hypothèse que le nodule est de forme globalement ellipsoïdale ce qui n'est pas toujours le cas d'après les segmentations manuelles réalisées par le praticien. A ce moment l'algorithme n'est plus très efficace.\\
 Cette détection automatique serait d'une très grande aide pour les praticiens. En effet, lors de la mise en place de ce programme, nous avons pu constater la difficulté de tirer des informations globales sur une image 3D et jauger de la difficulté et de la lenteur d'une détermination manuelle. Le programme a été testé et adapté aux cancers du poumon mais pourrait être largement réutilisé pour d'autres partie du corps, tant que le nodule se situent à l'intérieur d'une partie molle, c'est à dire bien différentiable du nodule lui-même par scanner.
 
 \bibliographystyle{plain} %Style of Bibliography: plain / apalike / amsalpha / ...
