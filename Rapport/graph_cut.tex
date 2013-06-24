@@ -79,6 +79,59 @@
 \parindent=0pt
 \begin{document}
 \maketitle
+\section{Délimitation par un ellipsoïde}
+
+Dans cette partie nous utilisons les propriétés géométriques du nodule pour obtenir une délimitation approchée. Nous savons qu'un module est globalement de forme ellipsoïdale, donc nous allons chercher quel ellipsoïde représente le plus fidèlement possible le nodule recherché. Pour plus d'efficacité en terme de temps calcul, nous allons passer par deux étapes. Une première étape qui donne une première approxiamtion de l'ellipsoïde utilisant en particulier l'analyse en composante principale, puis une deuxième étape qui permet de raffiner les paramètres de l'ellipsoïde et sui utilise la transformée de Hough. Pourcela on utilise la matrice renvoyée par la première partie qui renvoie à chaque voxel la probabilité qu'il soit dans le nodule.
+
+\subsection{Approximation des paramètres}
+
+Le problème consiste à déterminer les 12 paramètres de l'ellipsoïde : les 3 coordonnées du centre et celles des 3 axes de l'ellipsoïde. Pour cela il faut déterminer quels voxels seront considérés, en première approxiamtion, dans le nodule. On commence donc par faire un seuillage à  l'aide de la fonction  \texttt{Is\_in} qui stocke dans un tableau les coordonnées des voxels dont la propbabilité d'être dans le module est supérieure au seuil. Toute cette étape va se baser sur cet ensemble. Il faut donc bien choisir le seuil pour optimiser cette approximation.
+
+\subsubsection{Analyse en composante principale}
+
+\paragraph{Théorie} L'analyse en composante principale permet d'analyser un ensemble de données dans sa globalité et le synthétiser en donnant les $n$ axes principaux. Ces données sont souvent complexes, représentées suivant de nombreuses variables. Cette méthode permet de transformer ces variables corrélées en nouvelle variables décorrélées et donc de réduire leur nombre. En effet, elle rend l'information moins redondante et on peut alors choisir les k variables les plus pertinentes du point de vue de l'inertie ou de la variance pour former ce qu'on appelle un dictionnaire. \\
+Par exemple, dans une image, l'ACP va déterminer les deux axes qui expliquent le mieux la dispersion de l'objet interprété comme un nuage de points. Elle va aussi les ordonner par inertie expliquée, le second axe étant perpendiculaire au premier.\\
+
+Soit $f_1,...,f_n$  un ensemble de donnée avec $f_i \in \mathbb{R}^d$, on cherche un sous-espace tel que la projection soit la plus proche de la donnée originale , c'est à dire que la projection des données sur ce sous-espace soit de norme maximale. On peut exprimer ce problème sous la forme :
+$$\max_V \sum_{i=1}^n \parallel P_V(f_i-\overline{f_n}) \parallel ^2$$
+où V est un sous-espace vectoriel et $P_V$ est la projection sur le sous-espace vectoriel V et $\overline{f_n}$ la moyenne des données $f_i$ .
+
+On peut aisément démontrer que ce sous-espace optimal est $V=Vect(u_1,..., u_k)$ où $u_1,..., u_k$ sont les vecteurs propres associés aux k plus grandes valeurs propres de la matrice de covariance des données. Les valeurs propres représente l'importance de la composante dans la représentation.
+
+
+\paragraph{Application}
+
+Pour déterminer les paramètres approchés de l'ellipsoïde, on commence donc par calculer le centre en moyennant les voxels contenus par tableau de données renvoyé par la fonction \texttt{Is\_in}. \\\\
+On applique ensuite la méthode de l'Analyse en Composantes Principales sur ce même tableau où les données sont les n voxels du tableau et les variables sont les 3 coordonnées. On obtient ainsi les axes de l'ellipsoïde (vecteurs propres de la matrice de covariance).\\\\
+Pour déterminer les rayons $R_i$ de l'ellipsoïde on utilise les deux informations suivantes :
+\begin{itemize}
+	\item Volume = $\frac{4}{3} \pi R_1R_2R_3$ = taille du tableau
+	\item le rapport entre les rayons est égal au rapport entre les valeurs propres de la covariance des données (calculé lors de l'AP)
+\end{itemize}
+
+\subsection{Raffinement par la transformée de Hough}
+
+La transformée de Hough va donc nous permettre de corriger l'erreur commise par l'ACP lors de la détermintion de l'ellipsoïde.
+
+\subsubsection{Application de la transformée de Hough}
+
+L'objectif est toujours d'identifier les formes élémentaires modélisant notre ensemble de données. Cette méthode tente d'accumuler des évidences sur l'existence d'une forme particulière telle qu'une droite, un cercle ou  une ellipse. Pour cela il faut tout d'abord déterminer les paramètres qui définissent entièrement notre forme. Ensuite on teste pour chaque valeur des paramètres la précision de l'ellipsoïde et on choisit le meilleur. Mais commentévaluer la précision ?\\\\
+La transformée de Hough suggère de calculer le nombre de données dans notre ensemble se situant sur notre surface. Le meilleur est alors celui avec le plus grand score.\\
+Cependant, pour choisir un volume, cette méthode ne fonctionne pas car il y a trop peu de points sur le bord, et si on compte le nombre de points à l'intérieur, l'algorithme nous pousserait à prendre un volume trop grand qui contiendrait tous les "outliers". Il faut donc pénaliser cet excès de volume. On a finalement appliqué une variante de la méthode.\\\\
+Dans notre application, nous avons accès à la probabilité d'être dans le nodule grâce à la première partie. Nous avons alors utilisé ces probabilité pour "voter" pour ou contre un ellipsoïde. L'efficacité se calcule ainsi : pour chaque voxel contenu dans l'ellipsoïde testé, on ajoute la probabilité du voxel d'être dans le nodule et on soustrait la valeur du seuil. Ainsi les voxels qui ne sont pas dans le nodule (probabilité inférieure au seuil) pénalise l'efficacité de l'ellipsoïde.
+
+\subsubsection{Implémentation}
+
+Cette méthode permet d'obtenir la forme optimale, par contre elle est très coûteuse en temps calcul. En effet, pour chaque 12-uplet de paramètres ils faut parcourir l'image entière. C'est pour cela que nous avons commencé par l'ACP, la valeur approché nous permet de tester les paramètres sur un petit espace, typiquement plus ou moins 3 par rapport à la première approximation. Mais cela ne suffit pas, car $7^{12}$ ellipsoïdes reste beaucoup trop long à calculer. Il faut appliquer de nombreuses "ruses" pour accélérer la méthode.\\
+
+\paragraph{Diminuer le nombre de paramètres à faire varier} Nous savons que les axes de l'ellipsoïdes sont orthogonaux. Donc après avoir fixé le premier axes, ils nous restent plus que deux coordonnées pour le deuxième axe, puis une pour le troisième. Ainsi nous nous ramenons à 9 paramètres à faire varier. Sur une image de 60x60 pixels on obtient un temps calcul d'environ 72h, c'est à dire compètement inutilisable.
+
+\paragraph{Utilisation des matrices} Avec le logiciel de programmation, le calcul matriciel est très optimisé. Pour chaque paramètre sur les axes, nous avons calculé une fois pour toute la matrice de 1 et 0 représentant l'ellipsoïde. En effet la variation du centre peut se faire directement sur la matrice et le calcul d'efficicaté revient à une somme et produit sur les matrice. Ainsi nous avons réussi à passer à une calcul d'environ 2h30.
+
+\paragraph{Diminuer la taille de l'image traitée} Grâce l'approximation de l'ACP, on peut sélectionner une partie de l'image très serrée autour de l'ellipsoïde présumé et ainsi diminuer le temps calcul pour chaque jeu de paramètre. On arrive à environ 1h.\\\\
+
+Finalement, cette méthode peut être extrêmement précise mais très coûteuse .
+
 
 \section{Coupes de graphes}
 
@@ -175,6 +228,15 @@ où $\delta$ est le symbole de Kronecker, $d\left(\frac{p+q}{2}, \epsilon \right
 
 \section{Tests de segmentation}
 
+\subsection{test de la détermination de l'ellipsoïde}
+
+
+La méthode est robuste au bruit diffus, on a pu la tester sur des images d'ellipsoïdes bruités générés par la fonction \texttt{generate\_ellipsoïd}. Même avec un bruit important on obtient de bons résultats pour le centre et les directions des axes. Cependant, les rayons sont assez sensibles au bruit puisque ils dépendent directement du nombre de "faux positifs". Il serait intéressant de chercher une  manière de diminuer l'influence de ces "faux positifs" sur le calcul des rayons.\\\\ 
+Par contre, s'il reste une zone continue de membrane non filtrée, l'ACP donne des résultat très médiocres pour les 12 paramètres.
+
+Tant que le bruit reste diffus, l'appliction de la transformée de Hough est suffisante pour corriger l'erreur de cette étape.
+
+\subsection{test globaux}
 Pour vérifier l'efficacité de la partie segmentation, nous l'avons sur des données théoriques:
 \begin{itemize}
 	\item[$\bullet$] un ellipsoïde défini par avance par son centre, ses axes et ses rayons
@@ -190,7 +252,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0.7 & $\infty$\\
+		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 5.9 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -203,7 +265,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0.7 & $\infty$\\
+		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 5.9 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -216,7 +278,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & 0.8 & 0.8 & 0.8 & 0.8 & 0.8 & 0.7 & 1.1 & 2.7 & 10.3 & 18.5 & $\infty$\\
+		$\epsilon$ (\%) & 3.4 & 3.4 & 3.3 & 3.3 & 2.9 & 3.1 & 3.6 & 12.1 & 32.8 & 56.9 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -229,7 +291,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & $\infty$ & 13.6 & 9.6 & 8 & 7.1 & 6.5 & 6.6 & 7.5 & 12.8 & 19.6 & $\infty$\\
+		$\epsilon$ (\%) & $\infty$ & 40.6 & 29.2 & 24.1 & 22.5 & 19.9 & 20.4 & 24.4 & 35 & 61.3 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}

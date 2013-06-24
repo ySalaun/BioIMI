@@ -7,7 +7,7 @@ t=1;
 for i=1:size(E,1)
     for j=1:size(E,2)
         for k=1:size(E,3)
-            if E(i,j,k)>seuil % mettre en paramètre
+            if E(i,j,k)>seuil
                 M(t,1)=i;
                 M(t,2)=j; 
                 M(t,3)=k;

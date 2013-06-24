@@ -11,7 +11,7 @@ m=size(M,1);
 % Compute the parameters c and X
 [Vect, Val, Mean]= pca ( M, 3 );
 
-Val= sqrt(Val)
+%Val= sqrt(Val)
 
 c=Mean;
 
