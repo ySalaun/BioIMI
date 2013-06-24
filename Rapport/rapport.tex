@@ -15,7 +15,6 @@
 \usepackage{multicol}
 \usepackage{cite}
 \usepackage{color}
-\usepackage{dsfont}
 \usepackage[center]{caption}
 \usepackage{listings} 
 \usepackage{xcolor} 
@@ -66,7 +65,7 @@
 \newtheorem{ass}{Assumption}
 \newtheorem{algo}{Algorithme}
 
-\newcommand{\G}{\mathcal{G}}
+%\newcommand{\G}{\mathcal{G}}
 \newcommand{\lab}{\text{label}}
 
 \def\endproof{\hfill $\Box$\newline\newline}
@@ -82,7 +81,7 @@
 
 \section*{Introduction}
 
-Les nodules sont des anomalies du corps de forme ellipsoidale. Certains d'entre eux peuvent être des tumeurs et leur détection/surveillance permet d'éviter de graves cancers. Cependant, leur faible taille les rend difficilement détectables. Ce projet a ainsi pour but de détecter automatiquement des nodules dans certaines parties du corps. Pour cela, l'utilisateur sélectionne grossièrement une partie de l'image puis l'algorithme indique où est situé le nodule. \\
+Les nodules sont des anomalies du corps de forme ellipsoidale. Certains d'entre eux peuvent être des tumeurs et leur détection/surveillance permet d'éviter de graves cancers. Cependant, leur faible taille les rend difficilement détectables. Ce projet a ainsi pour but de détecter automatiquement des nodules pulmonaires à partir d'images scanner. Pour cela, l'utilisateur sélectionne grossièrement une partie de l'image puis l'algorithme indique où est situé le nodule. \\
 Cette détection se décompose en plusieurs parties qui affinent tour à tour la segmentation de la zone étudiée et rendent un résultat de plus en plus précis. Pour cela, les méthodes suivantes sont utilisées tour à tour :
 \begin{itemize}
 	\item[$\bullet$]Filtres de Gabor
@@ -91,9 +90,71 @@ Cette détection se décompose en plusieurs parties qui affinent tour à tour la
 	\item[$\bullet$]Coupe de graphes
 \end{itemize}
 
+
+
+\section{Préliminaires}
+
+Nous reconstruisons donc tout d'abord une image 3D en niveaux de gris à partir des données DICOM. L'utilisateur peut alors sélectionner la zone qui l'intéresse. 
+La segmentation s'effectue donc sur un petit échantillon d'image. Les nodules non pas tous la même taille mais en général l'image sont de l'échelle d'une cinquantaine de voxels.
+
+Pour réaliser une première segmentation de l'image on va classer les voxels en fonction de leurs réponses à différents filtres appliqués à l'image. En pratique on applique n filtres de Gabor à l'image, pour chaque filtre on obtient une nouvelle image. On en déduit donc un vecteur de n valeurs associé à chaque voxel. On effectue ensuite une ACP pour noter ces différents vecteurs.
+Un seuillage peut nous donner une approximation de la position du nodule. On peut aussi garder les valeurs telles quelles pour estimer une probabilité d'appartenance au nodule.  
+
+\subsection{Filtres de Gabor}
+
+\paragraph{Principe}
+
+Les filtres de Gabor  est un filtre linéaire qui est le produit d'une sinusoïde 
+par une enveloppe gaussienne. Son expression spatiale est donc de la forme :
+$$ G(x)= cos(2 \pi (u_0 \cdot x) + \phi) exp\left(-\frac{{x-x_0}^2}{\sigma^2}\right) $$
+On applique donc cette fonction à un masque de convolution pour avoir un filtre de Gabor.
+Les paramètres qui nous intéressent ici sont $u_0$ qui permet de définir l'orientation et la fréquence du filtre et $\sigma$ qui permet de spécifier l'étendue du noyau gaussien. 
+
+Il existe des variantes où l'écart type de la gaussienne dépend de la direction sélectionnée. 
+La direction peut être donnée par une matrice orthonormale $U$ et si l'on note $\tilde{x} = U x$ on peut écrire la fonction de Gabor sous la forme.
+$$ G(x)= cos(2 \pi (\lambda \cdot \tilde{x}) ) exp\left(- {\Sigma \tilde{x}}^2 \right) $$
+
+L'utilisation d'un écart-type anisotrope est souvent utilisé en détection des contours car de tels filtres de Gabor détectent les discontinuités dans une certaine direction. En effet, localement, la convolée d'une fonction régulière par une sinusoïde est nulle.
+
+\paragraph{Application à la détection de textures sur l'image originale}
+
+Les fitres de Gabor peuvent aussi  caractériser les différentes textures d'une image. En appliquant un banc de filtre à une image on peut extraire les fréquences et les orientations caractéristiques des différentes régions de l'image. C'est cet aspect qui nous intéresser plus ici. Nous nous sommes donc limités à un sigme isotrope. Il est déjà assez difficile de choisir les autres paramètres. Nous avons au total un nombre assez élevé de paramètres et il n'est pas évident de pouvoir fournir un critère objectif sur la qualité du résultat fourni par le banc de filtre.
+
+Cependant il est difficile ici de différencier les certainres textures avec la résolution permise par l'imagerie par scanner. Le choix de la fréquence est limité par la discrétisation de l'espace. On doit donc se contenter de moyennes et basses fréquences. On ne travaille que sur un portion de l'image, il n'y a donc pas de problèmes de bord en revanche pour des questions d'efficacité, on doit donc limiter la taille des masques de convolution, et donc l'écart type, à des valeurs raisonnables. Nous devons également effectuer de nombreuses convolutions sans pouvoir a priori moyenner ou utiliser une structure particuliuère. La convolution d'un noyau de taille $s$ sur une image cubique de côté $l$ est en $O(s^3 l^3)$. Pour un masque de taille 7 sur une image 50x50x50 on doit effectuer environ 43 000 000 d'opérations. 
+\\\\
+
+Par ailleurs l'ACP divise toujours l'espace en 2 parties alors que le nombre de zones visibles sur l'image varie. Une grande partie de l'image est occupé par le poumon mais on peut aussi voir des muscles intercostaux, des côtes, des tronçons d'arbre pulmonaires et bien sûr un ou des nodules.
+L'arbre pulmonaire apparaît de façon très similaire aux nodules mais le lissage en fait disparaître une grande partie.
+En revanche, les côtes et les muscles peuvent occuper d'importants volumes. On pourrait essayer d'améliorer l'algorithme de segmentation en estimant le nombre de classes présentes ou alors superviser l'apprentissage ou la segmentation. Dans ce cas il faudrait surement augmenter le nombre de filtres utilisés afin d'augmenter l'information disponnible lors de la classification.
+
+On a préféré utiliser ici la géométrie générale de l'objet recherché.
+On utilise donc un banc de filtre relativement simple constitué des 5 filtres suivants :
+\begin{center}
+\begin{tabular}{|llll|}
+  \hline
+   $\sigma$  & $u_x$ & $u_y $ & $u_z$ \\
+  \hline
+   1. & 0   & 0  & 0   \\
+   2. & 0   & 0  & 0   \\
+   2. & 2.  & 0  & 0   \\
+   2. & 0  & 2.  & 0   \\
+   2. & 0   & 0  & 2.  \\
+  \hline
+\end{tabular}
+\end{center}
+
+\subsection{Pré-traitement géométrique}
+
+On a vu que les résultats données par la partie précédente était difficilement utilisable à cause de la présence de la paroi thoracique. Afin de localiser le nodule, on remarque que, selon l'axe z (la verticale), le nodule doit correspondre à un maximum local de probabilité. On effectue donc sur chaque colonne de voxel une régression par un polynôme de degré 2 et on vérifie que l'on a un maximum significatif. 
+On définit donc ainsi un cylindre à l'emplacement du nodule. La motivation principale est que, contrairement au nodule, la paroi thoracique occupe souvent toute la verticale même si le corps humain n'est pas parfaitement cylindrique.
+On effectue ensuite une étape d'ouverture (érosion puis dilatation) afin d'éliminer les éléments indésirable.
+Cette étape est relativement efficace pour situer grossièrement le nodule ce qui est nécessaire pour réaliser les étapes suivantes.
+
+
+
 \section{Délimitation par un ellipsoïde}
 
-Dans cette partie nous utilisons les propriétés géométriques du nodule pour obtenir une délimitation approchée. Nous savons qu'un module est globalement de forme ellipsoïdale, donc nous allons chercher quel ellipsoïde représente le plus fidèlement possible le nodule recherché. Pour plus d'efficacité en terme de temps calcul, nous allons passer par deux étapes. Une première étape qui donne une première approximation de l'ellipsoïde utilisant en particulier l'analyse en composante principale, puis une deuxième étape qui permet de raffiner les paramètres de l'ellipsoïde et sui utilise la transformée de Hough. Pourcela on utilise la matrice renvoyée par la première partie qui renvoie à chaque voxel la probabilité qu'il soit dans le nodule.
+Dans cette partie nous utilisons les propriétés géométriques du nodule pour obtenir une délimitation approchée. Nous savons qu'un module est globalement de forme ellipsoïdale, donc nous allons chercher quel ellipsoïde représente le plus fidèlement possible le nodule recherché. Pour plus d'efficacité en terme de temps calcul, nous allons passer par deux étapes. Une première étape qui donne une première approximation de l'ellipsoïde utilisant en particulier l'analyse en composante principale, puis une deuxième étape qui permet de raffiner les paramètres de l'ellipsoïde et sui utilise la transformée de Hough. Pour cela on utilise la matrice renvoyée par la première partie qui renvoie à chaque voxel la probabilité qu'il soit dans le nodule.
 
 \subsection{Approximation des paramètres}
 
@@ -168,7 +229,7 @@ où $\lambda$ est appelé terme de régularité et permet de modifier l'importan
 
 \subsubsection{Forme des graphes}
 
-Il est également possible de modéliser le problème sous la forme d'un graphe $\G$. Ce graphe contient l'ensemble des points à classifier représentés sous la forme de ses sommets auxquels on ajoute 2 sommets particuliers généralement notés $s$ (pour \textit{source}) et $t$ (pour \textit{target}). Les points sont tous reliés par des arêtes à $s$ et $t$ qui représentent les 2 \textit{labels} de classification du problème. Par ailleurs, on relie les points entre eux lorsque l'affectation de l'un est fonction de l'affectation de l'autre.\\
+Il est également possible de modéliser le problème sous la forme d'un graphe $\mathcal{G}$. Ce graphe contient l'ensemble des points à classifier représentés sous la forme de ses sommets auxquels on ajoute 2 sommets particuliers généralement notés $s$ (pour \textit{source}) et $t$ (pour \textit{target}). Les points sont tous reliés par des arêtes à $s$ et $t$ qui représentent les 2 \textit{labels} de classification du problème. Par ailleurs, on relie les points entre eux lorsque l'affectation de l'un est fonction de l'affectation de l'autre.\\
 On obtient alors un graphe de la forme : 
 \begin{figure}[!h]
 	\begin{center}
@@ -180,25 +241,25 @@ On obtient alors un graphe de la forme :
 
 \subsubsection{Coupes minimales}
 
-On dit que $\mathcal{C}$ est une \textbf{coupe} du graphe $\G$ si elle sépare $\G$ en deux ensembles connexes disjoints $\mathcal{S},\mathcal{T}$ tels que  
+On dit que $\mathcal{C}$ est une \textbf{coupe} du graphe $\mathcal{G}$ si elle sépare $\mathcal{G}$ en deux ensembles connexes disjoints $\mathcal{S},\mathcal{T}$ tels que  
 $s \in \mathcal{S}$ et $t \in \mathcal{T}$.\\
 On peut alors définir la \textbf{capacité} de la coupe $\mathcal{C}$ par :
 \[
 	c(\mathcal{C}) = \sum_{(u,v) \in \mathcal{S} \times \mathcal{T}} c_{uv}
 \]
 où $c_{uv}$ est le poids assigné à l'arête $[u,v]$.\\
-Une coupe de $\G$ est alors minimale lorsqu'il n'existe pas d'autres coupes dont la capacité est inférieure strictement. Cependant, il n'y a en général pas unicité de la coupe minimale. De nombreux algorithme permettent de calculer la coupe minimale d'un graphe via le calcul de son équivalent, le \textbf{flot maximum}. En effet, le flot maximum est facilement calculable avec des algorithmes gloutons par exemple. \\
+Une coupe de $\mathcal{G}$ est alors minimale lorsqu'il n'existe pas d'autres coupes dont la capacité est inférieure strictement. Cependant, il n'y a en général pas unicité de la coupe minimale. De nombreux algorithme permettent de calculer la coupe minimale d'un graphe via le calcul de son équivalent, le \textbf{flot maximum}. En effet, le flot maximum est facilement calculable avec des algorithmes gloutons par exemple. \\
 On cherche donc à se ramener au problème de calcul de coupe minimale en affectant aux arêtes les poids suivants:
 \begin{itemize}
 	\item[$\bullet$] Un terme d'attache aux données, lorsque l'arête relie un sommet quelconque à $t$ ou $s$: $E_{DATA}(\lab, p)$
 	\item[$\bullet$] Un terme de régularité, lorsque l'arête relie deux sommets voisins $p$ et $q$: $E_{SMOOTH}(p,q)$
 \end{itemize}
-On rend alors équivalents la minimisation de l'énergie $E_{TOTAL}$ et la recherche de la coupe minimale de $\G$.\\
-Le calcul de la coupe minimale du graphe $\G$ ainsi construit permet de minimiser l'énergie et donc de résoudre le problème de classification.
+On rend alors équivalents la minimisation de l'énergie $E_{TOTAL}$ et la recherche de la coupe minimale de $\mathcal{G}$.\\
+Le calcul de la coupe minimale du graphe $\mathcal{G}$ ainsi construit permet de minimiser l'énergie et donc de résoudre le problème de classification.
 
 \subsection{Application dans le cadre de la détection des nodules}
 
-Pour appliquer des méthodes de coupes de graph au sujet qui nous intéresse, il s'agit alors de définir les fonctions d'attaches aux données et de régularisation d'une part et de construire un graphe $\G$ représentatif du problème d'autre part.
+Pour appliquer des méthodes de coupes de graph au sujet qui nous intéresse, il s'agit alors de définir les fonctions d'attaches aux données et de régularisation d'une part et de construire un graphe $\mathcal{G}$ représentatif du problème d'autre part.
 
 \subsubsection{Construction du graphe}
 
