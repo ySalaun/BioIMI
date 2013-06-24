@@ -72,16 +72,28 @@
 \def\endproof{\hfill $\Box$\newline\newline}
 \def\proof{\par\noindent{\it Proof}. \ignorespaces}
 
-\title{Projet de département}
+\title{Projet de département: \\ Detection automatique de nodules.}
 \author{Marie Rozand, Raphael Sivera, Yohann Salaun}
 \date{\today}
 
 \parindent=0pt
 \begin{document}
 \maketitle
+
+\section*{Introduction}
+
+Les nodules sont des anomalies du corps de forme ellipsoidale. Certains d'entre eux peuvent être des tumeurs et leur détection/surveillance permet d'éviter de graves cancers. Cependant, leur faible taille les rend difficilement détectables. Ce projet a ainsi pour but de détecter automatiquement des nodules dans certaines parties du corps. Pour cela, l'utilisateur sélectionne grossièrement une partie de l'image puis l'algorithme indique où est situé le nodule. \\
+Cette détection se décompose en plusieurs parties qui affinent tour à tour la segmentation de la zone étudiée et rendent un résultat de plus en plus précis. Pour cela, les méthodes suivantes sont utilisées tour à tour :
+\begin{itemize}
+	\item[$\bullet$]Filtres de Gabor
+	\item[$\bullet$]Analyse en Composantes Principales
+	\item[$\bullet$]Transformée de Hough
+	\item[$\bullet$]Coupe de graphes
+\end{itemize}
+
 \section{Délimitation par un ellipsoïde}
 
-Dans cette partie nous utilisons les propriétés géométriques du nodule pour obtenir une délimitation approchée. Nous savons qu'un module est globalement de forme ellipsoïdale, donc nous allons chercher quel ellipsoïde représente le plus fidèlement possible le nodule recherché. Pour plus d'efficacité en terme de temps calcul, nous allons passer par deux étapes. Une première étape qui donne une première approxiamtion de l'ellipsoïde utilisant en particulier l'analyse en composante principale, puis une deuxième étape qui permet de raffiner les paramètres de l'ellipsoïde et sui utilise la transformée de Hough. Pourcela on utilise la matrice renvoyée par la première partie qui renvoie à chaque voxel la probabilité qu'il soit dans le nodule.
+Dans cette partie nous utilisons les propriétés géométriques du nodule pour obtenir une délimitation approchée. Nous savons qu'un module est globalement de forme ellipsoïdale, donc nous allons chercher quel ellipsoïde représente le plus fidèlement possible le nodule recherché. Pour plus d'efficacité en terme de temps calcul, nous allons passer par deux étapes. Une première étape qui donne une première approximation de l'ellipsoïde utilisant en particulier l'analyse en composante principale, puis une deuxième étape qui permet de raffiner les paramètres de l'ellipsoïde et sui utilise la transformée de Hough. Pourcela on utilise la matrice renvoyée par la première partie qui renvoie à chaque voxel la probabilité qu'il soit dans le nodule.
 
 \subsection{Approximation des paramètres}
 
@@ -89,7 +101,7 @@ Le problème consiste à déterminer les 12 paramètres de l'ellipsoïde : les 3
 
 \subsubsection{Analyse en composante principale}
 
-\paragraph{Théorie} L'analyse en composante principale permet d'analyser un ensemble de données dans sa globalité et le synthétiser en donnant les $n$ axes principaux. Ces données sont souvent complexes, représentées suivant de nombreuses variables. Cette méthode permet de transformer ces variables corrélées en nouvelle variables décorrélées et donc de réduire leur nombre. En effet, elle rend l'information moins redondante et on peut alors choisir les k variables les plus pertinentes du point de vue de l'inertie ou de la variance pour former ce qu'on appelle un dictionnaire. \\
+\paragraph{Théorie} L'analyse en composante principale \cite{bib:PCA} permet d'analyser un ensemble de données dans sa globalité et le synthétiser en donnant les $n$ axes principaux. Ces données sont souvent complexes, représentées suivant de nombreuses variables. Cette méthode permet de transformer ces variables corrélées en nouvelle variables décorrélées et donc de réduire leur nombre. En effet, elle rend l'information moins redondante et on peut alors choisir les k variables les plus pertinentes du point de vue de l'inertie ou de la variance pour former ce qu'on appelle un dictionnaire. \\
 Par exemple, dans une image, l'ACP va déterminer les deux axes qui expliquent le mieux la dispersion de l'objet interprété comme un nuage de points. Elle va aussi les ordonner par inertie expliquée, le second axe étant perpendiculaire au premier.\\
 
 Soit $f_1,...,f_n$  un ensemble de donnée avec $f_i \in \mathbb{R}^d$, on cherche un sous-espace tel que la projection soit la plus proche de la donnée originale , c'est à dire que la projection des données sur ce sous-espace soit de norme maximale. On peut exprimer ce problème sous la forme :
@@ -111,7 +123,7 @@ Pour déterminer les rayons $R_i$ de l'ellipsoïde on utilise les deux informati
 
 \subsection{Raffinement par la transformée de Hough}
 
-La transformée de Hough va donc nous permettre de corriger l'erreur commise par l'ACP lors de la détermintion de l'ellipsoïde.
+La transformée de Hough \cite{bib:Hough, bib:genHough} va donc nous permettre de corriger l'erreur commise par l'ACP lors de la détermintion de l'ellipsoïde.
 
 \subsubsection{Application de la transformée de Hough}
 
@@ -228,7 +240,7 @@ où $\delta$ est le symbole de Kronecker, $d\left(\frac{p+q}{2}, \epsilon \right
 
 \section{Tests de segmentation}
 
-\subsection{test de la détermination de l'ellipsoïde}
+\subsection{Test sur la détermination de l'ellipsoïde}
 
 
 La méthode est robuste au bruit diffus, on a pu la tester sur des images d'ellipsoïdes bruités générés par la fonction \texttt{generate\_ellipsoïd}. Même avec un bruit important on obtient de bons résultats pour le centre et les directions des axes. Cependant, les rayons sont assez sensibles au bruit puisque ils dépendent directement du nombre de "faux positifs". Il serait intéressant de chercher une  manière de diminuer l'influence de ces "faux positifs" sur le calcul des rayons.\\\\ 
@@ -236,8 +248,8 @@ Par contre, s'il reste une zone continue de membrane non filtrée, l'ACP donne d
 
 Tant que le bruit reste diffus, l'appliction de la transformée de Hough est suffisante pour corriger l'erreur de cette étape.
 
-\subsection{test globaux}
-Pour vérifier l'efficacité de la partie segmentation, nous l'avons sur des données théoriques:
+\subsection{Test sur la coupe de graphe}
+Pour vérifier l'efficacité de la partie segmentation, nous avons utilisé des données théoriques:
 \begin{itemize}
 	\item[$\bullet$] un ellipsoïde défini par avance par son centre, ses axes et ses rayons
 	\item[$\bullet$] une image représentant un ellipsoide d'une certaine couleur sur un fond d'une autre couleur
@@ -252,7 +264,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 5.9 & $\infty$\\
+		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0.7 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -265,7 +277,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 5.9 & $\infty$\\
+		$\epsilon$ (\%) & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0.7 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -278,7 +290,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & 3.4 & 3.4 & 3.3 & 3.3 & 2.9 & 3.1 & 3.6 & 12.1 & 32.8 & 56.9 & $\infty$\\
+        $\epsilon$ (\%) & 0.8 & 0.8 & 0.8 & 0.8 & 0.8 & 0.7 & 1.1 & 2.7 & 10.3 & 18.5 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -291,7 +303,7 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 		\hline
 		$\lambda$ & 0 & 0.1& 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 & 0.8 & 0.9 & 1\\
 		\hline
-		$\epsilon$ (\%) & $\infty$ & 40.6 & 29.2 & 24.1 & 22.5 & 19.9 & 20.4 & 24.4 & 35 & 61.3 & $\infty$\\
+		$\epsilon$ (\%) & $\infty$ & 13.6 & 9.6 & 8 & 7.1 & 6.5 & 6.6 & 7.5 & 12.8 & 19.6 & $\infty$\\
 		\hline
 \end{tabular}
 \end{center}
@@ -299,6 +311,8 @@ Les résultats suivants sont présentés sous forme de tableaux et indiquent le 
 \end{table}
 
 Les résultats montrent ainsi une tendance à choisir un coefficient de régularité proche de 0.5 évitant ainsi les cas extrêmes ou aucune régularité/trop de régularité sont appliquées.
+
+\subsection{Tests pratiques}
 
 \bibliographystyle{plain} %Style of Bibliography: plain / apalike / amsalpha / ...
 \bibliography{literature} %You need a file 'literature.bib' for this.
